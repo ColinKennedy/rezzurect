@@ -21,7 +21,7 @@ def get_package_adapter(package, alias_manager):
         NotImplementedError: If the given `package` has no adapter.
 
     Returns:
-        `rez_helper.adapters.common.BaseAdapter` or NoneType: The found class.
+        `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     '''
     adapters = {
@@ -50,7 +50,7 @@ def add_common_commands(package, version, alias_manager):
             This handle is used to add aliases to the final package.
 
     Returns:
-        `rez_helper.adapters.common.BaseAdapter` or NoneType: The found class.
+        `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     '''
     adapter = get_package_adapter(package, alias_manager)

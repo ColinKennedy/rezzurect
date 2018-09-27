@@ -20,7 +20,7 @@ class BaseAdapter(object):
         '''Create the adapter and add the session's alias class.
 
         Args:
-            alias_manager (`rez_helper.adapters.common.BaseAdapter` or NoneType):
+            alias_manager (`rezzurect.adapters.common.BaseAdapter` or NoneType):
                 The class which is used to add aliases to the OS.
             include_common_aliases (`bool`, optional):
                 If True, add a "main" alias to the current session.
