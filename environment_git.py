@@ -14,7 +14,7 @@ from . import common
 
 def get_git_command(
         base_url,
-        platform=platform.system(),
+        system=platform.system(),
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
@@ -25,9 +25,9 @@ def get_git_command(
         raise RuntimeError('Urls "{urls}" were not reachable.'.format(urls=', '.join(urls)))
 
     chain = [
-        [platform, distribution, architecture],
-        [platform, architecture],
-        [platform],
+        [system, distribution, architecture],
+        [system, architecture],
+        [system],
     ]
 
     base_url, ending = common.split_url(base_url)

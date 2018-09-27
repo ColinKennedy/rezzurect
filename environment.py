@@ -21,7 +21,7 @@ from . import common
 
 def _get_rez_environment_details():
     # TODO : There has to be a better way to query this info. Find out, later
-    request = re.compile('~(\w+)==(\w+)')
+    request = re.compile(r'~(\w+)==(\w+)')
 
     output = {key: value for key, value in request.findall(os.environ.get('REZ_REQUEST', ''))}
     platform_ = output['platform'].capitalize()
@@ -32,42 +32,47 @@ def _init(
         source_path,
         build_path,
         install_path,
-        platform=platform.system(),
+        system=platform.system(),
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    adapter = build_adapter.get_adapter(platform, architecture=architecture)
+    add_from_internet(source_path, system, distribution, architecture)
 
-    # Try the local filesystem
+    add_git_remote_search(build_path, system.lower(), distribution, architecture)
+
+    adapter = build_adapter.get_adapter(system, architecture=architecture)
+    add_local_filesystem_search(adapter, source_path, install_path)
+
+    return adapter
+
+
+def add_git_remote_search(build_path, system, distribution, architecture):
+    git_command = environment_git.get_git_command(
+        environment_git.get_git_root_url(os.path.dirname(build_path)),
+        system.lower(),
+        distribution,
+        architecture,
+    )
+    strategy.register_strategy('git', git_command)
+
+
+def add_local_filesystem_search(adapter, source_path, install_path):
     strategy.register_strategy(
         'local',
         functools.partial(adapter.get_from_local, source_path, install_path),
         priority=True,
     )
 
-    # Try to download from the internet
+
+def add_from_internet(source_path, system, distribution, architecture):
     download_from_package = functools.partial(
         internet.download,
         get_package_name(source_path),
-        platform,
+        system,
         distribution,
         architecture,
     )
-    strategy.register_strategy(
-        'download',
-        download_from_package,
-    )
-
-    # Try to download from git
-    git_command = environment_git.get_git_command(
-        environment_git.get_git_root_url(os.path.dirname(build_path)),
-        platform.lower(),
-        distribution,
-        architecture,
-    )
-    strategy.register_strategy('git', git_command)
-
-    return adapter
+    strategy.register_strategy('download', download_from_package)
 
 
 def get_package_name(path):
@@ -84,5 +89,5 @@ def get_package_name(path):
 
 
 def init(source_path, build_path, install_path):
-    platform, distribution, architecture = _get_rez_environment_details()
-    return _init(source_path, build_path, install_path, platform, distribution, architecture)
+    system, distribution, architecture = _get_rez_environment_details()
+    return _init(source_path, build_path, install_path, system, distribution, architecture)
