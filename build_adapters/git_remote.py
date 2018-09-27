@@ -30,7 +30,12 @@ def get_git_command(
         [system],
     ]
 
-    base_url, ending = common.split_url(base_url)
+    config_url = os.getenv('REZZURECT_GIT_REMOTE_BASE_URL', '')
+
+    if config_url:
+        base_url = config_url
+    else:
+        base_url, ending = common.split_url(base_url)
 
     urls = []
     for option in chain:

@@ -13,9 +13,10 @@ from rez import config
 
 
 # IMPORT LOCAL LIBRARIES
-from . import environment_git
-from . import build_adapter
-from . import strategy
+from .build_adapter import build_adapter
+from .build_adapter import git_remote
+from .build_adapter import internet
+from .build_adapter import strategy
 from . import common
 
 
@@ -47,8 +48,8 @@ def _init(
 
 
 def add_git_remote_search(build_path, system, distribution, architecture):
-    git_command = environment_git.get_git_command(
-        environment_git.get_git_root_url(os.path.dirname(build_path)),
+    git_command = git_remote.get_git_command(
+        git_remote.get_git_root_url(os.path.dirname(build_path)),
         system.lower(),
         distribution,
         architecture,
