@@ -4,7 +4,7 @@
 '''A set of commands which are used to help simplify Rez packages.'''
 
 # IMPORT LOCAL LIBRARIES
-from .adapters import nuke_adapter
+from .setting_adapters import nuke_adapter
 
 
 def get_package_adapter(package, alias_manager):
