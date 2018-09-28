@@ -23,7 +23,7 @@ def _get_rez_environment_details():
     return (platform_, output['os'], output['arch'])
 
 
-def _resolve_module(path):
+def _resolve_object(path):
     '''Convert a path to a Python module into a Python module.
 
     Args:
