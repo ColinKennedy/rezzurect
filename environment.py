@@ -35,7 +35,10 @@ def _init(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    add_from_internet(source_path, system, distribution, architecture)
+    package_name = get_package_name(source_path)
+    add_from_internet(package_name, system, distribution, architecture)
+
+    add_git_remote_ssh(install_path, system, distribution, architecture)
 
     add_git_remote_search(build_path, system.lower(), distribution, architecture)
 
