@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-#
+# -*- coding: utf-8 -*-
+
+'''A set of generic functions that just needed a place so they could be shared.'''
 
 # IMPORT STANDARD LIBRARIES
 import platform
@@ -7,8 +9,7 @@ import urllib2
 
 
 def is_url_reachable(url):
-    url, _ = split_url(url)
-
+    '''bool: If the http/https URL points to a valid address.'''
     try:
         urllib2.urlopen(url)
     except (urllib2.HTTPError, urllib2.URLError):
@@ -18,14 +19,17 @@ def is_url_reachable(url):
 
 
 def get_architecture():
+    '''int: What the bit architecture of the user's current platform is (32 or 64).'''
     bits, _ = platform.architecture()
     bits = bits.rstrip('bit')
     return int(bits)
 
 
-def split_url(url):
-    ending = '.git'
-    if url.endswith(ending):
-        return (url[:-1 * len(ending)], ending)
+# TODO : Maybe remove this
+# def split_url(url):
+#     '''Remove the ".git" ending of a git repository URL, if it exists.'''
+#     ending = '.git'
+#     if url.endswith(ending):
+#         return (url[:-1 * len(ending)], ending)
 
-    return (url, '')
+#     return (url, '')

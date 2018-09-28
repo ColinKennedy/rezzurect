@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A set of functions for working with remote git repositories.'''
 
 # IMPORT STANDARD LIBRARIES
 import subprocess
@@ -12,6 +13,39 @@ import os
 from .. import common
 
 
+def clone_git_repository(url, path, silent=False):
+    '''Clone the given git url to the given folder path.
+
+    Args:
+        url (str):
+            Some git URL that the user has access to.
+        path (str):
+            The absolute path to a folder on-disk where url will be cloned into.
+        silent (`bool`, optional):
+            If True, do not print anything and just clone the repository.
+            If False, print out the percent completion to the user during cloning.
+            Default is False.
+
+    '''
+    # TODO : I have to do something about empty folders. The function fails
+    # if there are any files in `path` when this process runs.
+    #
+    process = subprocess.Popen(
+        ['git', 'clone', '--progress', url, path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+
+    # TODO : Also, it looks like sometimes line prints tons of empty newlines.
+    #        Figure out how to prevent that.
+    if silent:
+        # Read the un-buffered output so that the user can see the git clone happening
+        fd = process.stdout.fileno()
+        while process.returncode is None:
+            line = os.read(fd, 1000)   # Read a bit of data
+            print(line)
+
+
 def get_git_command(
         base_url,
         path='',
@@ -19,42 +53,37 @@ def get_git_command(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    def _get_git_command(url, path, silent=False):
-        # '''Clone the given git url to the given folder path.
+    '''Find a valid git repository and then create a function which can clone it.
 
-        # Args:
-        #     url (str):
-        #         Some git URL that the user has access to.
-        #     path (str):
-        #         The absolute path to a folder on-disk where url will be cloned into.
-        #     silent (`bool`, optional):
-        #         If True, do not print anything and just clone the repository.
-        #         If False, print out the percent completion to the user during cloning.
-        #         Default is False.
+    This function assumes the following:
+        1. You don't actually know the full git URL that you're trying to clone.
+        2. You have the `base_url`, like https://www.github.com/git.git
+        3. The URL you actually want looks like https://www.github.com/git-Linux-x86_64.git
+        4. You want the logic that "finds" this URL to be automatic.
 
-        # Raises:
+    Args:
+        base_url (str):
+            The base git URL to clone from.
+        path (str, optional):
+            A destination path to clone the git repository into.
+            If no path is given, the user's current directory is used, instead.
+            Default: "".
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str`, optional):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
 
-        # '''
-        # TODO : I have to do something about empty folders. The function fails
-        # if there are any files in `path` when this process runs.
-        #
-        process = subprocess.Popen(
-            ['git', 'clone', '--progress', url, path],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
+    Returns:
+        callable: The generated, wrapped function. This function takes no args.
 
-        # TODO : Also, it looks like sometimes line prints tons of empty newlines.
-        #        Figure out how to prevent that.
-        if silent:
-            # Read the un-buffered output so that the user can see the git clone happening
-            fd = process.stdout.fileno()
-            while process.returncode is None:
-                line = os.read(fd, 1000)   # Read a bit of data
-                print(line)
-
+    '''
     def _null(urls):
-        '''Raise an error with these URLs.'''
+        '''Raise an error and do nothing else.'''
         raise RuntimeError('Urls "{urls}" were not reachable.'.format(urls=', '.join(urls)))
 
     chain = [
@@ -71,7 +100,7 @@ def get_git_command(
     # else:
     #     base_url, ending = common.split_url(base_url)
 
-    base_url, ending = common.split_url(base_url)
+    base_url, ending = os.path.splitext(base_url)
 
     urls = []
     for option in chain:
@@ -82,7 +111,7 @@ def get_git_command(
         )
 
         if is_git_remote_reachable(url):
-            return functools.partial(_get_git_command, url, path)
+            return functools.partial(clone_git_repository, url, path)
 
         urls.append(url)
 

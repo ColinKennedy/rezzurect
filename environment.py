@@ -55,7 +55,7 @@ def _resolve_object(path):
     return item
 
 
-def _get_handlers(objects=''):
+def _get_handlers(objects=None):
     r'''Create the functions that will be used to add user "build" adapters.
 
     By default, if no objects are given, rezzurect will provide its own to use.
@@ -80,7 +80,13 @@ def _get_handlers(objects=''):
 
     '''
     if not objects:
-        objects = os.getenv('REZZURECT_ENVIRONMENT_MODULES', '').split(os.pathsep)
+        objects = []
+
+        for obj in os.getenv('REZZURECT_ENVIRONMENT_MODULES', '').split(os.pathsep):
+            obj = obj.strip()
+
+            if obj:
+                objects.append(obj)
 
     paths = ['rezzurect._environment']  # This is a fallback path for "default" handlers
 
@@ -130,12 +136,15 @@ def _init(
             The absolute path to the package definition's build folder.
         install_path (str):
             The absolute path to where the package's contents will be installed to.
-        system (str):
-            The name of the OS (example: Linux, Windows, etc.)
-        distribution (str):
-            The name of the type of OS (example: CentOS, windows, etc.)
-        architecture (str):
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str`, optional):
             The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
 
     '''
     for handler in _get_handlers():
@@ -149,13 +158,24 @@ def _init(
         )
 
     adapter = build_adapter.get_adapter(system, architecture=architecture)
-    add_local_filesystem_search(adapter, source_path, install_path)
+    add_local_filesystem_build(adapter, source_path, install_path)
 
     return adapter
 
 
-def add_local_filesystem_search(adapter, source_path, install_path):
-    # '''Search the user's files, using the adapter's settings.'''
+def add_local_filesystem_build(adapter, source_path, install_path):
+    '''Search the user's files and build the Rez package if needed.
+
+    Args:
+        adapter (`rezzurect.build_adapter.BaseAdapter`):
+            The object which is used to "find out" if a build is required and,
+            if so, build the Rez package.
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
+
+    '''
     strategy.register_strategy(
         'local',
         functools.partial(adapter.get_from_local, source_path, install_path),

@@ -1,50 +1,80 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A module which adds build options for Rez packages.
+
+Each build option is defined as a "strategy" which is basically just a name
+and a callable function to run it.
+
+See `register_strategy` for details on how to add build options to rezzurect.
+
+'''
+
 # IMPORT STANDARD LIBRARIES
-import collections
 import os
 
-
-class PrependOrderedDict(collections.OrderedDict):
-    def prepend(self, key, value, dict_setitem=dict.__setitem__):
-        # Reference: https://stackoverflow.com/questions/16664874
-        root = self._OrderedDict__root
-        first = root[1]
-
-        if key in self:
-            link = self._OrderedDict__map[key]
-            link_prev, link_next, _ = link
-            link_prev[1] = link_next
-            link_next[0] = link_prev
-            link[0] = root
-            link[1] = first
-            root[1] = first[0] = link
-        else:
-            root[1] = first[0] = self._OrderedDict__map[key] = [root, first, key]
-            dict_setitem(self, key, value)
+# IMPORT THIRD-PARTY LIBRARIES
+from . import prepend_dict
 
 
-STRATEGIES = PrependOrderedDict()
+STRATEGIES = prepend_dict.PrependOrderedDict()
 
 
-def get_strategies():
-    preference = os.getenv('REZZURECT_STRATEGY_ORDER', '')
-    order = []
+def get_strategies(order=''):
+    '''Find every build option in the order that the user requested.
 
-    if not preference:
+    Args:
+        order (`str`, optional):
+            A comma-separated list of build option names to load.
+            If nothing is given, the REZZURECT_STRATEGY_ORDER environment variable
+            is sourced instead. If the environment variable is not defined
+            then the order that build options were registered is used, instead.
+            Default: "".
+
+    Returns:
+        list[tuple[str, callable]]: The found build option names and functions.
+
+    '''
+    if not order:
+        order = []
+
+        for item in os.getenv('REZZURECT_STRATEGY_ORDER', '').split(','):
+            item.strip()
+
+            if item:
+                order.append(item)
+
+    if not order:
         return list(STRATEGIES.items())
 
-    for item in preference.split(','):
-        item = item.strip()
+    strategies = []
 
-        if item:
-            order.append(item)
+    for item in order:
+        try:
+            strategies.append(item, STRATEGIES[item])
+        except KeyError:
+            raise ValueError('item: {item}" is invalid. The options were "{options}.'
+                             ''.format(item=item, options=list(STRATEGIES)))
 
-    return [(item_, STRATEGIES[item_]) for item_ in order]
+    return strategies
 
 
 def register_strategy(name, function, priority=False):
+    '''Add a build option to rezzurect with the given name.
+
+    Args:
+        name (str):
+            The name which will be used to register the function.
+        function (callable):
+            A function that takes no args and will return nothing. If the build
+            fails, this function will raise an exception
+            (any type of exception is fine).
+        priority (`bool`, optional):
+            If True, add this build option to the front of the options.
+            If False, add this build option to the end.
+            Default is False.
+
+    '''
     if priority:
         STRATEGIES.prepend(name, function)
     else:

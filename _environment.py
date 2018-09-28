@@ -1,10 +1,11 @@
 #!/usr/bin/env python
-#
+# -*- coding: utf-8 -*-
+
+'''A module which loads some pre-defined methods to build Rez packages.'''
 
 # IMPORT STANDARD LIBRARIES
 import functools
 import platform
-import imp
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -18,6 +19,15 @@ from . import common
 
 
 def add_from_internet(package, system, distribution, architecture):
+    '''Add a function which download the package's required files and install them.
+
+    Args:
+        package (str): The name of the package to install.
+        system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
+        architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
+
+    '''
     download_from_package = functools.partial(
         internet.download,
         package,
@@ -29,6 +39,16 @@ def add_from_internet(package, system, distribution, architecture):
 
 
 def add_git_remote_search(build_path, system, distribution, architecture):
+    '''Add a function which download the package's required files and install them.
+
+    Args:
+        build_path (str): The absolute path to the Rez package's build folder.
+        system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
+        architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
+
+    '''
+    raise NotImplementedError('This needs an intall path to work')
     git_command = git_remote.get_git_command(
         git_remote.get_git_root_url(os.path.dirname(build_path)),
         system.lower(),
@@ -39,6 +59,15 @@ def add_git_remote_search(build_path, system, distribution, architecture):
 
 
 def add_git_remote_ssh(install_path, system, distribution, architecture):
+    '''Find a git repository through SSH and clone it to the user's directory.
+
+    Args:
+        install_path (str): The absolute path to where the git repo will be cloned to.
+        system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
+        architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
+
+    '''
     git_command = git_remote.get_git_command(
         # TODO : This URL needs to be "resolved" properly
         'selecaotwo@192.168.0.11:/srv/git/rez-nuke.git',
@@ -83,7 +112,31 @@ def main(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    '''Run the main execution of the current script.'''
+    '''Load all of the user's defined build methods.
+
+    The currently supported build methods are:
+
+        git-ssh
+        local (filesystem)
+
+    Args:
+        source_path (str):
+            The absolute path to the package definition folder.
+        build_path (str):
+            The absolute path to the package definition's build folder.
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str`, optional):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
+
+    '''
     package_name = get_package_name(source_path)
     add_from_internet(package_name, system, distribution, architecture)
 
