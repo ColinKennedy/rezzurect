@@ -55,6 +55,58 @@ def _resolve_object(path):
     return item
 
 
+def _get_handlers(objects=''):
+    r'''Create the functions that will be used to add user "build" adapters.
+
+    By default, if no objects are given, rezzurect will provide its own to use.
+    It's highly encouraged to provide your own modules and classes though because
+    every pipeline is different and you should customize packages for your needs.
+
+    To provide own modules/classes, add paths to Python files or Python packages
+    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+
+    Args:
+        objects (str):
+            A path-separated list of paths or Python modules. Example:
+
+            C:\Users\foo\bar.py;some.importable.path;os.path
+            /usr/foo/bar.py:some.importable.path:os.path
+
+            A path that is one of two syntaxes. /absolute/path/to/module.py or
+            to.module (assuming that this module is importable in the user's PYTHONPATH).
+
+    Returns:
+        list[callable]: The found functions.
+
+    '''
+    if not objects:
+        objects = os.getenv('REZZURECT_ENVIRONMENT_MODULES', '').split(os.pathsep)
+
+    paths = ['rezzurect._environment']  # This is a fallback path for "default" handlers
+
+    if objects:
+        paths = []
+
+        for module in objects:
+            module = module.strip()
+
+            if module:
+                paths.append(module)
+
+    handlers = []
+
+    for path in paths:
+        module = _resolve_object(path)
+
+        if not module:
+            # TODO : Add a logging statement here
+            continue
+
+        handlers.append(module.main)
+
+    return handlers
+
+
 def _init(
         source_path,
         build_path,
@@ -63,26 +115,31 @@ def _init(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    modules = os.getenv('REZZURECT_ENVIRONMENT_MODULES', '')
+    '''Load all of the user's defined build methods.
 
-    paths = ['rezzurect._environment']
-    if modules:
-        paths = []
+    If no build methods were specified, a set of default build methods are
+    sourced by rezzurect, automatically.
 
-        for module in modules:
-            module = module.strip()
+    To provide own modules/classes, add paths to Python files or Python packages
+    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
-            if module:
-                paths.append(module)
+    Args:
+        source_path (str):
+            The absolute path to the package definition folder.
+        build_path (str):
+            The absolute path to the package definition's build folder.
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+        system (str):
+            The name of the OS (example: Linux, Windows, etc.)
+        distribution (str):
+            The name of the type of OS (example: CentOS, windows, etc.)
+        architecture (str):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
 
-    for path in paths:
-        module = _resolve_module(path)
-
-        if not module:
-            # TODO : Add a logging statement here
-            continue
-
-        module.main(
+    '''
+    for handler in _get_handlers():
+        handler(
             source_path,
             build_path,
             install_path,
@@ -107,5 +164,22 @@ def add_local_filesystem_search(adapter, source_path, install_path):
 
 
 def init(source_path, build_path, install_path):
+    '''Load all of the user's defined build methods.
+
+    If no build methods were specified, a set of default build methods are
+    sourced by rezzurect, automatically.
+
+    To provide own modules/classes, add paths to Python files or Python packages
+    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+
+    Args:
+        source_path (str):
+            The absolute path to the package definition folder.
+        build_path (str):
+            The absolute path to the package definition's build folder.
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+
+    '''
     system, distribution, architecture = _get_rez_environment_details()
     return _init(source_path, build_path, install_path, system, distribution, architecture)
