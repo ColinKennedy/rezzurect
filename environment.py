@@ -4,6 +4,7 @@
 # IMPORT STANDARD LIBRARIES
 import functools
 import platform
+import imp
 import os
 import re
 
@@ -44,14 +45,14 @@ def _resolve_module(path):
         module = __import__(path)
     except ImportError:
         return
-    else:
-        modules = path.split('.')
-        item = module
 
-        for index in range(1, len(modules)):
-            item = getattr(item, modules[index])
+    modules = path.split('.')
+    item = module
 
-        return item
+    for index in range(1, len(modules)):
+        item = getattr(item, modules[index])
+
+    return item
 
 
 def _init(
