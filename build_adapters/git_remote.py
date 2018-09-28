@@ -19,20 +19,42 @@ def get_git_command(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    def _get_git_command(url, path):
+    def _get_git_command(url, path, silent=False):
+        # '''Clone the given git url to the given folder path.
+
+        # Args:
+        #     url (str):
+        #         Some git URL that the user has access to.
+        #     path (str):
+        #         The absolute path to a folder on-disk where url will be cloned into.
+        #     silent (`bool`, optional):
+        #         If True, do not print anything and just clone the repository.
+        #         If False, print out the percent completion to the user during cloning.
+        #         Default is False.
+
+        # Raises:
+
+        # '''
+        # TODO : I have to do something about empty folders. The function fails
+        # if there are any files in `path` when this process runs.
+        #
         process = subprocess.Popen(
             ['git', 'clone', '--progress', url, path],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
 
-        # Read the un-buffered output so that the user can see the git clone happening
-        fd = process.stdout.fileno()
-        while process.returncode is None:
-            line = os.read(fd, 1000)   # Read a bit of data
-            print(line)
+        # TODO : Also, it looks like sometimes line prints tons of empty newlines.
+        #        Figure out how to prevent that.
+        if silent:
+            # Read the un-buffered output so that the user can see the git clone happening
+            fd = process.stdout.fileno()
+            while process.returncode is None:
+                line = os.read(fd, 1000)   # Read a bit of data
+                print(line)
 
     def _null(urls):
+        '''Raise an error with these URLs.'''
         raise RuntimeError('Urls "{urls}" were not reachable.'.format(urls=', '.join(urls)))
 
     chain = [
@@ -68,6 +90,17 @@ def get_git_command(
 
 
 def is_git_remote_reachable(url):
+    '''Check if the URL is a git repository.
+
+    Args:
+        url (str):
+            Some git url, such as root@192.168.0.0:/srv/git/whatever.git or
+            https://www.github.com/username/reponame.git or any other git syntax.
+
+    Returns:
+        bool: If the url is reachable.
+
+    '''
     process = subprocess.Popen(
         'git ls-remote {url}'.format(url=url),
         stdout=subprocess.PIPE,
@@ -80,6 +113,15 @@ def is_git_remote_reachable(url):
 
 
 def get_git_root_url(root):
+    '''Find the URL for the git repo at the given file path.
+
+    Args:
+        root (str): The absolute path to a directory on-disk.
+
+    Returns:
+        str: The found git remote URL, if any.
+
+    '''
     if not os.path.isdir(root):
         return ''
 

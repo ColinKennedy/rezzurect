@@ -23,6 +23,17 @@ def _get_rez_environment_details():
 
 
 def _resolve_module(path):
+    '''Convert a path to a Python module into a Python module.
+
+    Args:
+        path (str):
+            A path that is one of two syntaxes. /absolute/path/to/module.py or
+            to.module (assuming that this module is importable in the user's PYTHONPATH).
+
+    Returns:
+        `module` or NoneType: The found module, if any.
+
+    '''
     if os.path.isabs(path):
         try:
             return imp.load_source('', path)
@@ -67,6 +78,7 @@ def _init(
         module = _resolve_module(path)
 
         if not module:
+            # TODO : Add a logging statement here
             continue
 
         module.main(
@@ -85,6 +97,7 @@ def _init(
 
 
 def add_local_filesystem_search(adapter, source_path, install_path):
+    # '''Search the user's files, using the adapter's settings.'''
     strategy.register_strategy(
         'local',
         functools.partial(adapter.get_from_local, source_path, install_path),
