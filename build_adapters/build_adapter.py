@@ -3,6 +3,7 @@
 
 # IMPORT STANDARD LIBRARIES
 import platform
+import zipfile
 import os
 
 # IMPORT LOCAL LIBRARIES
@@ -101,16 +102,20 @@ class LinuxAdapter(BaseAdapter):
         if not os.path.isdir(root):
             os.makedirs(root)
 
-        base = cls.get_base_command(executable, root)
-        command = 'sudo {base}'.format(base=base)
-        process = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True)
-        _, stderr = process.communicate()
+        zip_file = zipfile.ZipFile(executable, 'r')
 
-        return bool(stderr)
+        try:
+            zip_file.extractall(root)
+        except Exception:
+            return False
+        finally:
+            zip_file.close()
+
+        return True
 
     @staticmethod
     def get_install_file(root):
-        return os.path.join(root, 'Nuke11.2v3-linux-x86-release-64-installer')
+        return os.path.join(root, 'archive', 'Nuke11.2v3-linux-x86-release-64-installer')
 
 
 class WindowsAdapter(BaseAdapter):
