@@ -7,16 +7,14 @@ import platform
 import os
 import re
 
-
 # IMPORT THIRD-PARTY LIBRARIES
 from rez import config
 
-
 # IMPORT LOCAL LIBRARIES
-from .build_adapter import build_adapter
-from .build_adapter import git_remote
-from .build_adapter import internet
-from .build_adapter import strategy
+from .build_adapters import build_adapter
+from .build_adapters import git_remote
+from .build_adapters import internet
+from .build_adapters import strategy
 from . import common
 
 
@@ -57,6 +55,18 @@ def add_git_remote_search(build_path, system, distribution, architecture):
     strategy.register_strategy('git', git_command)
 
 
+def add_git_remote_ssh(install_path, system, distribution, architecture):
+    git_command = git_remote.get_git_command(
+        # TODO : This URL needs to be "resolved" properly
+        'selecaotwo@192.168.0.11:/srv/git/rez-nuke.git',
+        path=install_path,
+        system=system,
+        distribution=distribution,
+        architecture=architecture,
+    )
+    strategy.register_strategy('git-ssh', git_command)
+
+
 def add_local_filesystem_search(adapter, source_path, install_path):
     strategy.register_strategy(
         'local',
@@ -65,10 +75,10 @@ def add_local_filesystem_search(adapter, source_path, install_path):
     )
 
 
-def add_from_internet(source_path, system, distribution, architecture):
+def add_from_internet(package, system, distribution, architecture):
     download_from_package = functools.partial(
         internet.download,
-        get_package_name(source_path),
+        package,
         system,
         distribution,
         architecture,
