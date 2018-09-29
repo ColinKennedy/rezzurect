@@ -48,7 +48,6 @@ def add_git_remote_search(build_path, system, distribution, architecture):
         distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
 
     '''
-    raise NotImplementedError('This needs an intall path to work')
     git_command = git_remote.get_git_command(
         git_remote.get_git_root_url(os.path.dirname(build_path)),
         system.lower(),

@@ -51,7 +51,7 @@ def get_strategies(order=''):
 
     for item in order:
         try:
-            strategies.append(item, STRATEGIES[item])
+            strategies.append((item, STRATEGIES[item]))
         except KeyError:
             raise ValueError('item: {item}" is invalid. The options were "{options}.'
                              ''.format(item=item, options=list(STRATEGIES)))
