@@ -16,33 +16,29 @@ class BaseAdapter(object):
 
     name = ''
 
-    def __init__(self, alias_manager, include_common_aliases=True):
-        '''Create the adapter and add the session's alias class.
+    def __init__(self, version, alias=None):
+        # '''Create the adapter and add the session's alias class.
 
-        Args:
-            alias_manager (`rezzurect.adapters.common.BaseAdapter` or NoneType):
-                The class which is used to add aliases to the OS.
-            include_common_aliases (`bool`, optional):
-                If True, add a "main" alias to the current session.
-                If False, don't add it.
-                Default is True.
+        # Args:
+        #     alias (`rezzurect.adapters.common.BaseAdapter` or NoneType):
+        #         The class which is used to add aliases to the OS.
 
-        '''
+        # '''
         super(BaseAdapter, self).__init__()
-        self.alias_manager = alias_manager
+        self.alias = alias
+        self.version = version
 
     def __make_common_aliases(self, command):
         '''Create an alias which can be used to "run" the package.'''
-        self.alias_manager('main', command)
+        self.alias('main', command)
 
-    @staticmethod
-    def _get_executable_command(version):
+    def get_executable_command(self):
         '''str: The command that is run as the "main" alias, if it is enabled.'''
         return ''
 
-    def execute(self, version):
+    def execute(self):
         '''Add aliases and anything else that all packages should include.'''
-        command = self._get_executable_command(version)
+        command = self.get_executable_command()
 
         if not command:
             return
@@ -57,15 +53,14 @@ class AbstractBaseAdapter(BaseAdapter):
 
     name = ''
 
-    @staticmethod
     @abc.abstractmethod
-    def _get_executable_command(version):
+    def get_executable_command():
         '''str: The command that is run as the "main" alias, if it is enabled.'''
         return ''
 
-    def execute(self, version):
+    def execute(self):
         '''Add aliases and anything else that all packages should include.'''
         super(AbstractBaseAdapter, self).execute(version)
 
         if self.name:
-            self.alias_manager(self.name, self._get_executable_command(version))
+            self.alias(self.name, self.get_executable_command())
