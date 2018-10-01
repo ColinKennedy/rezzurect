@@ -160,6 +160,9 @@ def _init(
     adapter = build_adapter.get_adapter(system, architecture=architecture)
     add_local_filesystem_build(adapter, source_path, install_path)
 
+    # TODO : Add this
+    # add_link_build
+
     return adapter
 
 

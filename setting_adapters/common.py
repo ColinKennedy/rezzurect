@@ -7,7 +7,7 @@
 import abc
 
 # IMPORT THIRD-PARTY LIBRARIES
-import six
+from ..vendors import six
 
 
 class BaseAdapter(object):
