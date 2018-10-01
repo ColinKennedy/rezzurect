@@ -7,7 +7,7 @@
 from .setting_adapters import nuke_adapter
 
 
-def get_package_adapter(package, alias_manager):
+def get_package_adapter(package, alias_manager=None):
     '''Create an adapter which can be used to add aliases to environment info.
 
     Args:

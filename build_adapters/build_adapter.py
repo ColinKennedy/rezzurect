@@ -73,9 +73,6 @@ class BaseAdapter(object):
                 'install_file "{executable}" does not exist. '
                 'Check its spelling and try again.'.format(executable=executable))
 
-        if not os.path.isdir(install):
-            os.makedirs(install)
-
         return executable
 
     @classmethod

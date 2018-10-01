@@ -47,6 +47,6 @@ class NukeAdapter(common.AbstractBaseAdapter):
                 )
             )
 
-        # The Nuke command on linux is
+        # The Nuke command on linux is "Nuke11.2". Non-commercial is "Nuke11.2 -nc"
         version = '.'.join([match.group('major'), match.group('minor')])
         return 'Nuke{version} -nc'.format(version=version)

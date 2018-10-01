@@ -18,7 +18,7 @@ from .build_adapters import strategy
 from . import common
 
 
-def add_from_internet(package, system, distribution, architecture):
+def add_from_internet_build(package, system, distribution, architecture):
     '''Add a function which download the package's required files and install them.
 
     Args:
@@ -38,7 +38,7 @@ def add_from_internet(package, system, distribution, architecture):
     strategy.register_strategy('download', download_from_package)
 
 
-def add_git_remote_search(build_path, system, distribution, architecture):
+def add_git_remote_build(build_path, system, distribution, architecture):
     '''Add a function which download the package's required files and install them.
 
     Args:
@@ -57,7 +57,7 @@ def add_git_remote_search(build_path, system, distribution, architecture):
     strategy.register_strategy('git', git_command)
 
 
-def add_git_remote_ssh(install_path, system, distribution, architecture):
+def add_git_remote_ssh_build(install_path, system, distribution, architecture):
     '''Find a git repository through SSH and clone it to the user's directory.
 
     Args:

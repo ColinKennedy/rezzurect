@@ -176,30 +176,55 @@ def add_local_filesystem_build(adapter, source_path, install_path):
             The absolute path to where the package will be installed into.
 
     '''
+    def _make_install_and_get_from_local(adapter, source_path, install_path):
+        if not os.path.isdir(install_path):
+            os.makedirs(install_path)
+
+        adapter.get_from_local(source_path, install_path)
+
     strategy.register_strategy(
         'local',
-        functools.partial(adapter.get_from_local, source_path, install_path),
+        functools.partial(_make_install_and_get_from_local, adapter, source_path, install_path),
         priority=True,
     )
 
 
-def init(source_path, build_path, install_path):
-    '''Load all of the user's defined build methods.
+# TODO : Consider removing `install_path` since a module definition might be easier to work with
+def init(
+        source_path,
+        build_path,
+        install_path,
+        system=platform.system(),
+        distribution='-'.join(platform.dist()),
+        architecture=common.get_architecture(),
+    ):
+    # '''Load all of the user's defined build methods.
 
-    If no build methods were specified, a set of default build methods are
-    sourced by rezzurect, automatically.
+    # If no build methods were specified, a set of default build methods are
+    # sourced by rezzurect, automatically.
 
-    To provide own modules/classes, add paths to Python files or Python packages
-    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+    # To provide own modules/classes, add paths to Python files or Python packages
+    # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
-    Args:
-        source_path (str):
-            The absolute path to the package definition folder.
-        build_path (str):
-            The absolute path to the package definition's build folder.
-        install_path (str):
-            The absolute path to where the package's contents will be installed to.
+    # Args:
+    #     source_path (str):
+    #         The absolute path to the package definition folder.
+    #     build_path (str):
+    #         The absolute path to the package definition's build folder.
+    #     install_path (str):
+    #         The absolute path to where the package's contents will be installed to.
 
-    '''
-    system, distribution, architecture = _get_rez_environment_details()
+    # '''
+    if not system or not distribution or not architecture:
+        system_, distribution_, architecture_ = _get_rez_environment_details()
+
+        if not system:
+            system = system_
+
+        if not distribution:
+            distribution = distribution_
+
+        if not architecture:
+            architecture = architecture_
+
     return _init(source_path, build_path, install_path, system, distribution, architecture)
