@@ -6,15 +6,22 @@
 # IMPORT STANDARD LIBRARIES
 import subprocess
 import platform
+import getpass
 import zipfile
 import abc
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-import six
+from rez import package_maker__ as package_maker
+from rez.vendor.version import version
+from rez import config
 
 # IMPORT LOCAL LIBRARIES
+from ..vendors import six
 from . import strategy
+
+
+_DEFAULT_VALUE = object()
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -104,17 +111,43 @@ class BaseAdapter(object):
         return is_installed or user_did_not_request_an_install
 
     @staticmethod
-    def execute():
+    def _execute(definition, root=''):
+        if not root:
+            root = config.config.get('local_packages_path')
+
+        if not os.path.isdir(root):
+            os.makedirs(root)
+
+        with package_maker.make_package(definition.name, root) as pkg:
+            mirror('authors', definition, pkg, default=[getpass.getuser()])
+            mirror('commands', definition, pkg)
+            mirror('description', definition, pkg)
+            mirror('help', definition, pkg, default='')
+            mirror('name', definition, pkg)
+            mirror('timestamp', definition, pkg)
+            mirror('tools', definition, pkg)
+            # mirror('uuid', definition, pkg, default=str(uuid.uuid4()))
+            pkg.version = version.Version(definition.version)
+
+    # TODO : Consider making `definition` into a dict
+    @classmethod
+    def execute(cls, definition, root=''):
         '''Try different build methods until something works.
 
         Raises:
             RuntimeError: If all found build methods fail.
 
         '''
+        if not root:
+            root = config.config.get('local_packages_path')
+
+        cls._execute(definition, root)
+
         # TODO : Replace with logging messages
         strategies = strategy.get_strategies()
 
         errors = []
+
         for name, choice in strategies:
             try:
                 choice()
@@ -248,3 +281,15 @@ def get_adapter(system=platform.system(), architecture=platform.architecture()):
         raise NotImplementedError('system "{system}" is not supported.'.format(system=system))
 
     return adapter(architecture)
+
+
+def mirror(attribute, module, package, default=_DEFAULT_VALUE):
+    try:
+        value = getattr(module, attribute)
+    except AttributeError:
+        if default == _DEFAULT_VALUE:
+            return
+
+        value = default
+
+    setattr(package, attribute, value)
