@@ -114,6 +114,7 @@ def _get_handlers(objects=None):
 
 
 def _init(
+        version,
         source_path,
         build_path,
         install_path,
@@ -121,32 +122,32 @@ def _init(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    '''Load all of the user's defined build methods.
+    # '''Load all of the user's defined build methods.
 
-    If no build methods were specified, a set of default build methods are
-    sourced by rezzurect, automatically.
+    # If no build methods were specified, a set of default build methods are
+    # sourced by rezzurect, automatically.
 
-    To provide own modules/classes, add paths to Python files or Python packages
-    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+    # To provide own modules/classes, add paths to Python files or Python packages
+    # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
-    Args:
-        source_path (str):
-            The absolute path to the package definition folder.
-        build_path (str):
-            The absolute path to the package definition's build folder.
-        install_path (str):
-            The absolute path to where the package's contents will be installed to.
-        system (`str`, optional):
-            The name of the OS (example: "Linux", "Windows", etc.)
-            If nothing is given, the user's current system is used, instead.
-        distribution (`str`, optional):
-            The name of the type of OS (example: "CentOS", "windows", etc.)
-            If nothing is given, the user's current distribution is used, instead.
-        architecture (`str`, optional):
-            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
-            If nothing is given, the user's current architecture is used, instead.
+    # Args:
+    #     source_path (str):
+    #         The absolute path to the package definition folder.
+    #     build_path (str):
+    #         The absolute path to the package definition's build folder.
+    #     install_path (str):
+    #         The absolute path to where the package's contents will be installed to.
+    #     system (`str`, optional):
+    #         The name of the OS (example: "Linux", "Windows", etc.)
+    #         If nothing is given, the user's current system is used, instead.
+    #     distribution (`str`, optional):
+    #         The name of the type of OS (example: "CentOS", "windows", etc.)
+    #         If nothing is given, the user's current distribution is used, instead.
+    #     architecture (`str`, optional):
+    #         The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+    #         If nothing is given, the user's current architecture is used, instead.
 
-    '''
+    # '''
     for handler in _get_handlers():
         handler(
             source_path,
@@ -157,13 +158,29 @@ def _init(
             architecture=architecture,
         )
 
-    adapter = build_adapter.get_adapter(system, architecture=architecture)
+    adapter = build_adapter.get_adapter(version, system, architecture=architecture)
     add_local_filesystem_build(adapter, source_path, install_path)
 
-    # TODO : Add this
-    # add_link_build
+    add_link_build(adapter)
 
     return adapter
+
+
+def add_link_build(adapter):
+    def _skip_build_if_installed(adapter):
+        paths = adapter.get_installation_paths()
+
+        for path in paths:
+            if os.path.isdir(path):
+                return
+
+        raise RuntimeError('No expected install folder could be found. '
+                           'Checked "{paths}".'.format(paths=paths))
+
+    strategy.register_strategy(
+        'link',
+        functools.partial(_skip_build_if_installed, adapter),
+    )
 
 
 def add_local_filesystem_build(adapter, source_path, install_path):
@@ -194,6 +211,7 @@ def add_local_filesystem_build(adapter, source_path, install_path):
 
 # TODO : Consider removing `install_path` since a module definition might be easier to work with
 def init(
+        version,
         source_path,
         build_path,
         install_path,
@@ -230,4 +248,12 @@ def init(
         if not architecture:
             architecture = architecture_
 
-    return _init(source_path, build_path, install_path, system, distribution, architecture)
+    return _init(
+        version,
+        source_path,
+        build_path,
+        install_path,
+        system,
+        distribution,
+        architecture,
+    )

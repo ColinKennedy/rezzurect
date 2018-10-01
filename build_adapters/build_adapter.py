@@ -38,14 +38,16 @@ class BaseAdapter(object):
     platform = ''
     _known_metadata_files = ('build.rxt', '.bez.yaml', 'package.py')
 
-    def __init__(self, architecture):
-        '''Create the instance and store the user's architecture.
+    def __init__(self, version, system, architecture):
+        # '''Create the instance and store the user's architecture.
 
-        Args:
-            architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        # Args:
+        #     architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
-        '''
+        # '''
         super(BaseAdapter, self).__init__()
+        self.version = version
+        self.system = system
         self.architecture = architecture
 
     @staticmethod
@@ -111,7 +113,7 @@ class BaseAdapter(object):
         return is_installed or user_did_not_request_an_install
 
     @staticmethod
-    def _execute(definition, root=''):
+    def make_package(definition, root=''):
         if not root:
             root = config.config.get('local_packages_path')
 
@@ -131,7 +133,7 @@ class BaseAdapter(object):
 
     # TODO : Consider making `definition` into a dict
     @classmethod
-    def execute(cls, definition, root=''):
+    def make_install(cls, root=''):
         '''Try different build methods until something works.
 
         Raises:
@@ -140,8 +142,6 @@ class BaseAdapter(object):
         '''
         if not root:
             root = config.config.get('local_packages_path')
-
-        cls._execute(definition, root)
 
         # TODO : Replace with logging messages
         strategies = strategy.get_strategies()
@@ -165,6 +165,10 @@ class BaseAdapter(object):
             'No strategy to install the package suceeded. The strategies were, '
             '"{strategies}".'.format(strategies=[name for name, _ in strategies]))
 
+    @abc.abstractmethod
+    def get_preinstalled_executables(self):
+        return set()
+
 
 class LinuxAdapter(BaseAdapter):
 
@@ -172,14 +176,14 @@ class LinuxAdapter(BaseAdapter):
 
     platform = 'Linux'
 
-    def __init__(self, architecture):
-        '''Create the instance and store the user's architecture.
+    def __init__(self, version, system, architecture):
+        # '''Create the instance and store the user's architecture.
 
-        Args:
-            architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        # Args:
+        #     architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
-        '''
-        super(LinuxAdapter, self).__init__(architecture)
+        # '''
+        super(LinuxAdapter, self).__init__(version, system, architecture)
 
     def get_from_local(cls, source, install):
         '''Unzip the Nuke file to the given install folder.
@@ -207,6 +211,18 @@ class LinuxAdapter(BaseAdapter):
         '''str: Get the absolute path to where the expected Nuke install file is.'''
         return os.path.join(root, 'archive', 'Nuke11.2v3-linux-x86-release-64-installer')
 
+    def get_preinstalled_executables(self):
+        major_minor_version = self.version.rstrip('0123456789v')
+        raise NotImplementedError(('Need to write this', major_minor_version))
+
+        options = [
+            '/usr/local/Nuke{obj.version}/Nuke{major_minor_version}',
+            os.path.expanduser('~/Nuke{version}/Nuke{major_minor_version}'),
+        ]
+
+        return set((path.format(obj=self, major_minor_version=major_minor_version)
+                    for path in options))
+
 
 class WindowsAdapter(BaseAdapter):
 
@@ -214,19 +230,20 @@ class WindowsAdapter(BaseAdapter):
 
     platform = 'Windows'
 
-    def __init__(self, architecture):
-        '''Create the instance and store the user's architecture.
+    def __init__(self, version, system, architecture):
+        # '''Create the instance and store the user's architecture.
 
-        Args:
-            architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        # Args:
+        #     architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
-        '''
-        super(WindowsAdapter, self).__init__(architecture)
+        # '''
+        super(WindowsAdapter, self).__init__(version, system, architecture)
 
     @staticmethod
     def _get_base_command(executable, root):
         '''str: The command used to install Nuke, on Windows.'''
-        return '{executable} /dir="{root}" /silent'.format(executable=executable, root=root)
+        return '{executable} /dir="{root}" /silent'.format(
+            executable=executable, root=root)
 
     @staticmethod
     def _get_install_file(root):
@@ -252,14 +269,30 @@ class WindowsAdapter(BaseAdapter):
         base = cls._get_base_command(executable, install)
         command = '{base}'.format(base=base)
 
-        _, stderr = subprocess.Popen(command, stderr=subprocess.PIPE, shell=True).communicate()
+        _, stderr = subprocess.Popen(
+            command, stderr=subprocess.PIPE, shell=True).communicate()
 
         if stderr:
             raise RuntimeError('The local install failed with this message "{stderr}".'
                                ''.format(stderr=stderr))
 
+    def get_preinstalled_executables(self):
+        major_minor_version = self.version.rstrip('0123456789v')
+        raise NotImplementedError(('Need to write this', major_minor_version))
 
-def get_adapter(system=platform.system(), architecture=platform.architecture()):
+        return set([
+            r'C:\Program Files\Nuke{obj.version}\Nuke{major_minor_version}.exe'.format(
+                obj=self,
+                major_minor_version=major_minor_version,
+            ),
+        ])
+
+
+def get_adapter(
+        version,
+        system=platform.system(),
+        architecture=platform.architecture(),
+    ):
     '''Create an adapter for the given configuration.
 
     Args:
@@ -280,7 +313,7 @@ def get_adapter(system=platform.system(), architecture=platform.architecture()):
     except KeyError:
         raise NotImplementedError('system "{system}" is not supported.'.format(system=system))
 
-    return adapter(architecture)
+    return adapter(version, system, architecture)
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):
