@@ -98,7 +98,7 @@ def add_common_commands(package, version, env, alias):
 
     # '''
     adapter = get_setting_adapter(package, version, alias)
-    adapter.execute(version)
+    adapter.execute()
 
     install_root = env.INSTALL_ROOT.get()
 

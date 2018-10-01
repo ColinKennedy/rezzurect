@@ -60,7 +60,7 @@ class AbstractBaseAdapter(BaseAdapter):
 
     def execute(self):
         '''Add aliases and anything else that all packages should include.'''
-        super(AbstractBaseAdapter, self).execute(version)
+        super(AbstractBaseAdapter, self).execute()
 
         if self.name:
             self.alias(self.name, self.get_executable_command())
