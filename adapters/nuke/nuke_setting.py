@@ -4,17 +4,17 @@
 '''An adapter (and its functions) for creating and running a Nuke Rez package.'''
 
 # IMPORT LOCAL LIBRARIES
-from .. import common
+from .. import common_setting
 from . import helper
 
 
-class NukeAdapter(common.AbstractBaseAdapter):
+class NukeAdapter(common_setting.AbstractBaseAdapter):
 
     '''An adapter which is used to set up common settings / aliases for Nuke.'''
 
     name = 'nuke'
 
-    def __init__(self, alias_manager, include_common_aliases=True):
+    def __init__(self, version, alias):
         '''Create the adapter and add the session's alias class.
 
         Args:
