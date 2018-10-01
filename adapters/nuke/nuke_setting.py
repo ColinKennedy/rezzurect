@@ -3,14 +3,9 @@
 
 '''An adapter (and its functions) for creating and running a Nuke Rez package.'''
 
-# IMPORT STANDARD LIBRARIES
-import re
-
 # IMPORT LOCAL LIBRARIES
-import common
-
-
-_VERSION_PARSER = re.compile(r'(?P<major>\d+).(?P<minor>\d+)v(?P<patch>\d+)')
+from .. import common
+from . import helper
 
 
 class NukeAdapter(common.AbstractBaseAdapter):
@@ -36,14 +31,14 @@ class NukeAdapter(common.AbstractBaseAdapter):
     @staticmethod
     def _get_executable_command(version):
         '''str: The command that is run as the "main" alias.'''
-        match = _VERSION_PARSER.match(version)
+        match = helper.VERSION_PARSER.match(version)
 
         if not match:
             raise EnvironmentError(
                 'version "{version}" did not match expected pattern, '
-                '"{_VERSION_PARSER.pattern}"'.format(
+                '"{parser.pattern}"'.format(
                     version=version,
-                    _VERSION_PARSER=_VERSION_PARSER.pattern,
+                    parser=helper.VERSION_PARSER,
                 )
             )
 

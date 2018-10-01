@@ -17,8 +17,9 @@ from rez.vendor.version import version
 from rez import config
 
 # IMPORT LOCAL LIBRARIES
-from ..vendors import six
-from . import strategy
+from ...strategies import strategy
+from ...vendors import six
+from . import helper
 
 
 _DEFAULT_VALUE = object()
@@ -51,8 +52,17 @@ class BaseAdapter(object):
         self.architecture = architecture
 
     @staticmethod
+    def _get_major_minor_version(text):
+        match = helper.VERSION_PARSER.match(text)
+
+        if not match:
+            return ('', '')
+
+        return (match.group('major'), match.group('minor'))
+
+    @staticmethod
     @abc.abstractmethod
-    def _get_install_file(root):
+    def get_install_file(root):
         '''str: Get the absolute path to where the expected Nuke install file is.'''
         return ''
 
@@ -75,7 +85,7 @@ class BaseAdapter(object):
             str: The absolute path to the executable file which is used for installation.
 
         '''
-        executable = cls._get_install_file(source)
+        executable = cls.get_install_file(source)
 
         if not os.path.isfile(executable):
             raise EnvironmentError(
@@ -207,20 +217,29 @@ class LinuxAdapter(BaseAdapter):
             zip_file.close()
 
     @staticmethod
-    def _get_install_file(root):
+    def get_install_file(root):
         '''str: Get the absolute path to where the expected Nuke install file is.'''
         return os.path.join(root, 'archive', 'Nuke11.2v3-linux-x86-release-64-installer')
 
     def get_preinstalled_executables(self):
-        major_minor_version = self.version.rstrip('0123456789v')
-        raise NotImplementedError(('Need to write this', major_minor_version))
+        major, minor = self._get_major_minor_version(self.version)
+
+        if not major:
+            raise RuntimeError(
+                'Version "{obj.version}" has no major component. This should not happen.'
+                ''.format(obj=self))
+
+        if not minor:
+            raise RuntimeError(
+                'Version "{obj.version}" has no minor component. This should not happen.'
+                ''.format(obj=self))
 
         options = [
-            '/usr/local/Nuke{obj.version}/Nuke{major_minor_version}',
-            os.path.expanduser('~/Nuke{version}/Nuke{major_minor_version}'),
+            '/usr/local/Nuke{obj.version}/Nuke{major}.{mino}',
+            os.path.expanduser('~/Nuke{version}/Nuke{major}.{minor}'),
         ]
 
-        return set((path.format(obj=self, major_minor_version=major_minor_version)
+        return set((path.format(obj=self, major=major, minor=minor)
                     for path in options))
 
 
@@ -246,7 +265,7 @@ class WindowsAdapter(BaseAdapter):
             executable=executable, root=root)
 
     @staticmethod
-    def _get_install_file(root):
+    def get_install_file(root):
         '''str: Get the absolute path to where the expected Nuke install file is.'''
         return os.path.join(root, 'archive', 'Nuke11.2v3-win-x86-release-64.exe')
 
@@ -277,43 +296,25 @@ class WindowsAdapter(BaseAdapter):
                                ''.format(stderr=stderr))
 
     def get_preinstalled_executables(self):
-        major_minor_version = self.version.rstrip('0123456789v')
-        raise NotImplementedError(('Need to write this', major_minor_version))
+        major, minor = self._get_major_minor_version(self.version)
+
+        if not major:
+            raise RuntimeError(
+                'Version "{obj.version}" has no major component. This should not happen.'
+                ''.format(obj=self))
+
+        if not minor:
+            raise RuntimeError(
+                'Version "{obj.version}" has no minor component. This should not happen.'
+                ''.format(obj=self))
 
         return set([
-            r'C:\Program Files\Nuke{obj.version}\Nuke{major_minor_version}.exe'.format(
+            r'C:\Program Files\Nuke{obj.version}\Nuke{major}.{minor}.exe'.format(
                 obj=self,
-                major_minor_version=major_minor_version,
+                major=major,
+                minor=minor,
             ),
         ])
-
-
-def get_adapter(
-        version,
-        system=platform.system(),
-        architecture=platform.architecture(),
-    ):
-    '''Create an adapter for the given configuration.
-
-    Args:
-        system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
-        architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
-
-    Returns:
-        `BaseAdapter`: The found adapter.
-
-    '''
-    options = {
-        'Linux': LinuxAdapter,
-        'Windows': WindowsAdapter,
-    }
-
-    try:
-        adapter = options[system]
-    except KeyError:
-        raise NotImplementedError('system "{system}" is not supported.'.format(system=system))
-
-    return adapter(version, system, architecture)
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):

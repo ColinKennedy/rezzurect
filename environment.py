@@ -9,8 +9,8 @@ import os
 import re
 
 # IMPORT LOCAL LIBRARIES
-from .build_adapters import build_adapter
-from .build_adapters import strategy
+from .strategies import strategy
+from .adapters import chooser
 from . import common
 
 
@@ -114,6 +114,7 @@ def _get_handlers(objects=None):
 
 
 def _init(
+        package,
         version,
         source_path,
         build_path,
@@ -158,7 +159,13 @@ def _init(
             architecture=architecture,
         )
 
-    adapter = build_adapter.get_adapter(version, system, architecture=architecture)
+    adapter = chooser.get_adapter(
+        package,
+        version,
+        system,
+        architecture=architecture,
+    )
+
     add_local_filesystem_build(adapter, source_path, install_path)
 
     add_link_build(adapter)
@@ -168,14 +175,14 @@ def _init(
 
 def add_link_build(adapter):
     def _skip_build_if_installed(adapter):
-        paths = adapter.get_installation_paths()
+        paths = adapter.get_preinstalled_executables()
 
         for path in paths:
-            if os.path.isdir(path):
+            if os.path.isfile(path):
                 return
 
-        raise RuntimeError('No expected install folder could be found. '
-                           'Checked "{paths}".'.format(paths=paths))
+        raise RuntimeError('No expected binary file could be found. '
+                           'Checked "{paths}".'.format(paths=', '.join(sorted(paths))))
 
     strategy.register_strategy(
         'link',
@@ -187,7 +194,7 @@ def add_local_filesystem_build(adapter, source_path, install_path):
     '''Search the user's files and build the Rez package if needed.
 
     Args:
-        adapter (`rezzurect.build_adapter.BaseAdapter`):
+        adapter (`rezzurect.adapters.common.BaseAdapter`):
             The object which is used to "find out" if a build is required and,
             if so, build the Rez package.
         source_path (str):
@@ -211,6 +218,7 @@ def add_local_filesystem_build(adapter, source_path, install_path):
 
 # TODO : Consider removing `install_path` since a module definition might be easier to work with
 def init(
+        package,
         version,
         source_path,
         build_path,
@@ -249,6 +257,7 @@ def init(
             architecture = architecture_
 
     return _init(
+        package,
         version,
         source_path,
         build_path,

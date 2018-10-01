@@ -12,9 +12,9 @@ import os
 from rez import config
 
 # IMPORT LOCAL LIBRARIES
-from .build_adapters import git_remote
-from .build_adapters import internet
-from .build_adapters import strategy
+from .strategies import git_remote
+from .strategies import internet
+from .strategies import strategy
 from . import common
 
 
