@@ -97,5 +97,16 @@ def add_common_commands(package, version, env, alias):
     #     `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     # '''
-    adapter = get_setting_adapter(package, alias_manager)
+    adapter = get_setting_adapter(package, version, alias)
     adapter.execute(version)
+
+    install_root = env.INSTALL_ROOT.get()
+
+    if not os.path.isdir(install_root) or not os.listdir(install_root):
+        package_adapter = get_adapter(package, version)
+
+        for executable in package_adapter.get_preinstalled_executables():
+            if os.path.isfile(executable):
+                # Found a fallback system-wide install
+                env.PATH.append(os.path.dirname(executable))
+                break
