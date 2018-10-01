@@ -26,18 +26,17 @@ class NukeAdapter(common.AbstractBaseAdapter):
                 Default is True.
 
         '''
-        super(NukeAdapter, self).__init__(alias_manager)
+        super(NukeAdapter, self).__init__(version, alias)
 
-    @staticmethod
-    def _get_executable_command(version):
+    def get_executable_command(self):
         '''str: The command that is run as the "main" alias.'''
-        match = helper.VERSION_PARSER.match(version)
+        match = helper.VERSION_PARSER.match(self.version)
 
         if not match:
             raise EnvironmentError(
-                'version "{version}" did not match expected pattern, '
+                'version "{obj.version}" did not match expected pattern, '
                 '"{parser.pattern}"'.format(
-                    version=version,
+                    obj=self.version,
                     parser=helper.VERSION_PARSER,
                 )
             )
