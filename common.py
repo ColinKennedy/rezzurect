@@ -23,13 +23,3 @@ def get_architecture():
     bits, _ = platform.architecture()
     bits = bits.rstrip('bit')
     return int(bits)
-
-
-# TODO : Maybe remove this
-# def split_url(url):
-#     '''Remove the ".git" ending of a git repository URL, if it exists.'''
-#     ending = '.git'
-#     if url.endswith(ending):
-#         return (url[:-1 * len(ending)], ending)
-
-#     return (url, '')

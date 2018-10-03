@@ -123,32 +123,36 @@ def _init(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    # '''Load all of the user's defined build methods.
+    '''Load all of the user's defined build methods.
 
-    # If no build methods were specified, a set of default build methods are
-    # sourced by rezzurect, automatically.
+    If no build methods were specified, a set of default build methods are
+    sourced by rezzurect, automatically.
 
-    # To provide own modules/classes, add paths to Python files or Python packages
-    # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+    To provide own modules/classes, add paths to Python files or Python packages
+    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
-    # Args:
-    #     source_path (str):
-    #         The absolute path to the package definition folder.
-    #     build_path (str):
-    #         The absolute path to the package definition's build folder.
-    #     install_path (str):
-    #         The absolute path to where the package's contents will be installed to.
-    #     system (`str`, optional):
-    #         The name of the OS (example: "Linux", "Windows", etc.)
-    #         If nothing is given, the user's current system is used, instead.
-    #     distribution (`str`, optional):
-    #         The name of the type of OS (example: "CentOS", "windows", etc.)
-    #         If nothing is given, the user's current distribution is used, instead.
-    #     architecture (`str`, optional):
-    #         The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
-    #         If nothing is given, the user's current architecture is used, instead.
+    Args:
+        package (str):
+            The name of the Rez package to install.
+        version (str):
+            The specific install of `package`.
+        source_path (str):
+            The absolute path to the package definition folder.
+        build_path (str):
+            The absolute path to the package definition's build folder.
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str`, optional):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
 
-    # '''
+    '''
     for handler in _get_handlers():
         handler(
             source_path,
@@ -236,6 +240,10 @@ def init(
     # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
     # Args:
+    #     package (str):
+    #         The name of the Rez package to install.
+    #     version (str):
+    #         The specific install of `package`.
     #     source_path (str):
     #         The absolute path to the package definition folder.
     #     build_path (str):
