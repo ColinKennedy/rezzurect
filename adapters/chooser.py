@@ -38,7 +38,7 @@ def get_adapter(
 
     '''
     options = {
-        'nuke': {
+        'nuke_installation': {
             'Linux': nuke_builder.LinuxAdapter,
             'Windows': nuke_builder.WindowsAdapter,
         },

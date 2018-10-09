@@ -7,6 +7,7 @@
 import subprocess
 import platform
 import getpass
+import tarfile
 import zipfile
 import abc
 import os
@@ -206,9 +207,26 @@ class LinuxAdapter(BaseAdapter):
                 The absolute directory where `source` will be installed into.
 
         '''
-        executable = super(LinuxAdapter, cls).get_from_local(source, install)
+        try:
+            executable = super(LinuxAdapter, cls).get_from_local(source, install)
+        except EnvironmentError:
+            tar_path = os.path.join(
+                source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
+
+            if not os.path.isfile(tar_path):
+                raise EnvironmentError('Tar file "{tar_path}" does not exist.'
+                                       ''.format(tar_path=tar_path))
+
+            # TODO : Add a progress bar here
+            tar = tarfile.open(tar_path)
+            tar.extractall(path=os.path.dirname(tar_path))
+            tar.close()
+
+            executable = super(LinuxAdapter, cls).get_from_local(source, install)
+
         zip_file = zipfile.ZipFile(executable, 'r')
 
+        # TODO : Add a progress bar here
         try:
             zip_file.extractall(install)
         except Exception:  # pylint: disable=broad-except
