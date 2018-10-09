@@ -224,8 +224,8 @@ class LinuxAdapter(BaseAdapter):
                 ''.format(obj=self))
 
         options = [
-            '/usr/local/Nuke{obj.version}/Nuke{major}.{mino}',
-            os.path.expanduser('~/Nuke{version}/Nuke{major}.{minor}'),
+            '/usr/local/Nuke{obj.version}/Nuke{major}.{minor}',
+            os.path.expanduser('~/Nuke{obj.version}/Nuke{major}.{minor}'),
         ]
 
         return set((path.format(obj=self, major=major, minor=minor)
