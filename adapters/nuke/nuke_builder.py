@@ -38,7 +38,6 @@ class BaseAdapter(object):
     '''
 
     platform = ''
-    _known_metadata_files = ('build.rxt', '.bez.yaml', 'package.py')
 
     def __init__(self, version, system, architecture):
         # '''Create the instance and store the user's architecture.
@@ -94,34 +93,6 @@ class BaseAdapter(object):
                 'Check its spelling and try again.'.format(executable=executable))
 
         return executable
-
-    @classmethod
-    def exit_required(cls, targets, install_path):
-        '''Check if the user does not want to install the package.
-
-        Args:
-            targets (tuple[str]):
-                The user's args which were passed through command-line.
-                Example: If they wrote "rez-build my package --install" then
-                `targets` would be ["install"].
-            install_path (str):
-                The absolute path to where the package's contents will be installed.
-
-        Returns:
-            bool: If the user has already installed the package.
-
-        '''
-        # TODO : Remove this `return False` later
-        return False
-
-        if not os.path.isdir(install_path):
-            is_installed = False
-        else:
-            is_installed = bool([item for item in os.listdir(install_path)
-                                 if item not in cls._known_metadata_files])
-
-        user_did_not_request_an_install = 'install' not in targets
-        return is_installed or user_did_not_request_an_install
 
     @staticmethod
     def make_package(definition, root=''):
