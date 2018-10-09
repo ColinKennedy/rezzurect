@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The main module which is used to initialize Rez-build options.'''
+
 # IMPORT STANDARD LIBRARIES
 import functools
 import platform
@@ -178,7 +180,18 @@ def _init(
 
 
 def add_link_build(adapter):
+    '''Add the command which lets the user link Rez to an existing install.
+
+    Args:
+        adapter (`rezzurect.adapters.common.BaseAdapter`):
+            The object which is used to search for existing installs.
+
+    Raises:
+        RuntimeError: If no valid executable could be found.
+
+    '''
     def _skip_build_if_installed(adapter):
+        '''Raise a RuntimeError unless `adapter` finds an executable file it can use.'''
         paths = adapter.get_preinstalled_executables()
 
         for path in paths:
@@ -231,27 +244,36 @@ def init(
         distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
-    # '''Load all of the user's defined build methods.
+    '''Load all of the user's defined build methods.
 
-    # If no build methods were specified, a set of default build methods are
-    # sourced by rezzurect, automatically.
+    If no build methods were specified, a set of default build methods are
+    sourced by rezzurect, automatically.
 
-    # To provide own modules/classes, add paths to Python files or Python packages
-    # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
+    To provide own modules/classes, add paths to Python files or Python packages
+    into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
-    # Args:
-    #     package (str):
-    #         The name of the Rez package to install.
-    #     version (str):
-    #         The specific install of `package`.
-    #     source_path (str):
-    #         The absolute path to the package definition folder.
-    #     build_path (str):
-    #         The absolute path to the package definition's build folder.
-    #     install_path (str):
-    #         The absolute path to where the package's contents will be installed to.
+    Args:
+        package (str):
+            The name of the Rez package to install.
+        version (str):
+            The specific install of `package`.
+        source_path (str):
+            The absolute path to the package definition folder.
+        build_path (str):
+            The absolute path to the package definition's build folder.
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str`, optional):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
 
-    # '''
+    '''
     if not system or not distribution or not architecture:
         system_, distribution_, architecture_ = _get_rez_environment_details()
 
