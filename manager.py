@@ -123,7 +123,7 @@ def build_package(definition, root):
     process = subprocess.Popen(commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (_, stderr) = process.communicate()
 
-    return not stderr
+    return stderr
 
 
 def build_package_recursively(root, package, version='', build_path=''):
@@ -136,13 +136,13 @@ def build_package_recursively(root, package, version='', build_path=''):
     requirements = pkg.get_package().requires
 
     if not requirements:
-        success = build_package(definition, build_path)
+        stderr = build_package(definition, build_path)
 
-        if success:
+        if not stderr:
             return
 
-        raise RuntimeError('Definition "{definition}" failed to build.'
-                            ''.format(definition=definition))
+        raise RuntimeError('Definition "{definition}" failed to build. Stderr "{stderr}"'
+                           ''.format(definition=definition.__file__, stderr=stderr))
 
     for requirement in requirements:
         try:

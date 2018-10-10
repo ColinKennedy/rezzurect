@@ -9,6 +9,7 @@ import platform
 import getpass
 import tarfile
 import zipfile
+import stat
 import abc
 import os
 
@@ -25,6 +26,8 @@ from . import helper
 
 
 _DEFAULT_VALUE = object()
+# TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
+# TODO : Rename "get_from_local" and similar methods to "install_from_local"
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -185,7 +188,7 @@ class LinuxAdapter(BaseAdapter):
 
         '''
         try:
-            executable = super(LinuxAdapter, cls).get_from_local(source, install)
+            zip_file_path = super(LinuxAdapter, cls).get_from_local(source, install)
         except EnvironmentError:
             tar_path = os.path.join(
                 source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
@@ -199,9 +202,9 @@ class LinuxAdapter(BaseAdapter):
             tar.extractall(path=os.path.dirname(tar_path))
             tar.close()
 
-            executable = super(LinuxAdapter, cls).get_from_local(source, install)
+            zip_file_path = super(LinuxAdapter, cls).get_from_local(source, install)
 
-        zip_file = zipfile.ZipFile(executable, 'r')
+        zip_file = zipfile.ZipFile(zip_file_path, 'r')
 
         # TODO : Add a progress bar here
         try:
@@ -210,6 +213,16 @@ class LinuxAdapter(BaseAdapter):
             pass
         finally:
             zip_file.close()
+
+        executable = os.path.join(install, 'Nuke11.2')
+
+        if not os.path.isfile(executable):
+            raise EnvironmentError('Zip failed to extract to folder "{install}".'
+                                   ''.format(install=install))
+
+        # Reference: https://stackoverflow.com/questions/12791997
+        st = os.stat(executable)
+        os.chmod(executable, st.st_mode | stat.S_IEXEC)
 
     @staticmethod
     def get_install_file(root):
