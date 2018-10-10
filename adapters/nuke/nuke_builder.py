@@ -20,6 +20,7 @@ from rez import config
 # IMPORT LOCAL LIBRARIES
 from ...strategies import strategy
 from ...vendors import six
+from ... import manager
 from . import helper
 
 
@@ -29,13 +30,7 @@ _DEFAULT_VALUE = object()
 @six.add_metaclass(abc.ABCMeta)
 class BaseAdapter(object):
 
-    '''An adapter for installing the package onto the user's system.
-
-    Attributes:
-        _known_metadata_files (tuple[str]):
-            Filenames to ignore when checking if the user has already installed the package.
-
-    '''
+    '''An adapter for installing the package onto the user's system.'''
 
     platform = ''
 
@@ -103,13 +98,13 @@ class BaseAdapter(object):
             os.makedirs(root)
 
         with package_maker.make_package(definition.name, root) as pkg:
-            mirror('authors', definition, pkg, default=[getpass.getuser()])
-            mirror('commands', definition, pkg)
-            mirror('description', definition, pkg)
-            mirror('help', definition, pkg, default='')
-            mirror('name', definition, pkg)
-            mirror('timestamp', definition, pkg)
-            mirror('tools', definition, pkg)
+            manager.mirror('authors', definition, pkg, default=[getpass.getuser()])
+            manager.mirror('commands', definition, pkg)
+            manager.mirror('description', definition, pkg)
+            manager.mirror('help', definition, pkg, default='')
+            manager.mirror('name', definition, pkg)
+            manager.mirror('timestamp', definition, pkg)
+            manager.mirror('tools', definition, pkg)
             # mirror('uuid', definition, pkg, default=str(uuid.uuid4()))
             pkg.version = version.Version(definition.version)
 
@@ -126,6 +121,9 @@ class BaseAdapter(object):
             root = config.config.get('local_packages_path')
 
         # TODO : Replace with logging messages
+        # TODO : Also add a way for the adapter to say which strategies it supports
+        #        BUT overridable with an environment variable!
+        #
         strategies = strategy.get_strategies()
 
         errors = []
@@ -274,8 +272,7 @@ class WindowsAdapter(BaseAdapter):
 
         '''
         executable = super(WindowsAdapter, cls).get_from_local(source, install)
-        base = cls._get_base_command(executable, install)
-        command = '{base}'.format(base=base)
+        command = cls._get_base_command(executable, install)
 
         _, stderr = subprocess.Popen(
             command, stderr=subprocess.PIPE, shell=True).communicate()
@@ -304,15 +301,3 @@ class WindowsAdapter(BaseAdapter):
                 minor=minor,
             ),
         ])
-
-
-def mirror(attribute, module, package, default=_DEFAULT_VALUE):
-    try:
-        value = getattr(module, attribute)
-    except AttributeError:
-        if default == _DEFAULT_VALUE:
-            return
-
-        value = default
-
-    setattr(package, attribute, value)
