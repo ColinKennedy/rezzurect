@@ -115,6 +115,13 @@ def _get_handlers(objects=None):
     return handlers
 
 
+def _make_install_and_install_with_local(adapter, source_path, install_path):
+    if not os.path.isdir(install_path):
+        os.makedirs(install_path)
+
+    adapter.install_from_local(source_path, install_path)
+
+
 def _init(
         package,
         version,
@@ -208,29 +215,50 @@ def add_link_build(adapter):
 
 
 def add_local_filesystem_build(adapter, source_path, install_path):
-    '''Search the user's files and build the Rez package if needed.
+    '''Search the user's files and build the Rez package.
 
     Args:
         adapter (`rezzurect.adapters.common.BaseAdapter`):
-            The object which is used to "find out" if a build is required and,
-            if so, build the Rez package.
+            The object which is used to "install" the files.
         source_path (str):
             The absolute path to where the Rez package is located, on-disk.
         install_path (str):
             The absolute path to where the package will be installed into.
 
     '''
-    def _make_install_and_get_from_local(adapter, source_path, install_path):
+    strategy.register_strategy(
+        'local',
+        functools.partial(_make_install_and_install_with_local, adapter, source_path, install_path),
+        priority=True,
+    )
+
+
+def add_ftp_filesystem_build(adapter, source_path, install_path):
+    '''Download the files from FTP and the Rez package if needed.
+
+    Args:
+        adapter (`rezzurect.adapters.common.BaseAdapter`):
+            The object which is used to "install" the files from FTP.
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
+
+    '''
+    def _make_install_and_install_with_ftp(adapter, source_path, install_path):
         if not os.path.isdir(install_path):
             os.makedirs(install_path)
 
-        adapter.get_from_local(source_path, install_path)
+        server = os.environ['REZZURECT_FTP_SERVER']
+
+        adapter.install_from_ftp(server, source_path, install_path)
 
     strategy.register_strategy(
-        'local',
-        functools.partial(_make_install_and_get_from_local, adapter, source_path, install_path),
+        'ftp',
+        functools.partial(_make_install_and_install_with_local, adapter, source_path, install_path),
         priority=True,
     )
+
 
 
 # TODO : Consider removing `install_path` since a module definition might be easier to work with

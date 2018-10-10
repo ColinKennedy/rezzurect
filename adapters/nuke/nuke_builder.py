@@ -9,6 +9,7 @@ import platform
 import getpass
 import tarfile
 import zipfile
+import ftplib
 import stat
 import abc
 import os
@@ -27,7 +28,6 @@ from . import helper
 
 _DEFAULT_VALUE = object()
 # TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
-# TODO : Rename "get_from_local" and similar methods to "install_from_local"
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -66,7 +66,7 @@ class BaseAdapter(object):
 
     @classmethod
     @abc.abstractmethod
-    def get_from_local(cls, source, install):
+    def install_from_local(cls, source, install):
         '''Search for a locally-installed Nuke file and install it, if it exists.
 
         Args:
@@ -91,6 +91,26 @@ class BaseAdapter(object):
                 'Check its spelling and try again.'.format(executable=executable))
 
         return executable
+
+    @classmethod
+    def install_from_ftp(cls, server, source, install):
+        ftp = ftplib.FTP()
+
+        # TODO : Default host / port?
+        host = os.environ['REZZURECT_FTP_HOST']
+        port = os.environ['REZZURECT_FTP_PORT']
+        user = os.environ['REZZURECT_FTP_USER']
+        password = os.environ['REZZURECT_FTP_PASSWORD']
+        ftp.connect(host, port)
+        ftp.login(user, password)
+
+        # TODO : Make this work
+        # TODO : Make progress-bar
+        #        https://stackoverflow.com/questions/11623964/python-ftp-and-progressbar-2-3
+
+        destination = '/tmp/somewhere'
+        ftp.retrbinary(
+            'RETR {filename}'.format(filename='FOO FILENAME'))
 
     @staticmethod
     def make_package(definition, root=''):
@@ -154,7 +174,7 @@ class PassThroughAdapter(BaseAdapter):
     def get_install_file(root):
         return ''
 
-    def get_from_local(cls, source, install):
+    def install_from_local(cls, source, install):
         return ''
 
     def get_preinstalled_executables(self):
@@ -176,7 +196,7 @@ class LinuxAdapter(BaseAdapter):
         # '''
         super(LinuxAdapter, self).__init__(version, system, architecture)
 
-    def get_from_local(cls, source, install):
+    def install_from_local(cls, source, install):
         '''Unzip the Nuke file to the given install folder.
 
         Args:
@@ -188,8 +208,9 @@ class LinuxAdapter(BaseAdapter):
 
         '''
         try:
-            zip_file_path = super(LinuxAdapter, cls).get_from_local(source, install)
+            zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
         except EnvironmentError:
+            # TODO : This path needs to be a method or something
             tar_path = os.path.join(
                 source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
 
@@ -202,7 +223,7 @@ class LinuxAdapter(BaseAdapter):
             tar.extractall(path=os.path.dirname(tar_path))
             tar.close()
 
-            zip_file_path = super(LinuxAdapter, cls).get_from_local(source, install)
+            zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
 
         zip_file = zipfile.ZipFile(zip_file_path, 'r')
 
@@ -278,7 +299,7 @@ class WindowsAdapter(BaseAdapter):
         return os.path.join(root, 'archive', 'Nuke11.2v3-win-x86-release-64.exe')
 
     @classmethod
-    def get_from_local(cls, source, install):
+    def install_from_local(cls, source, install):
         '''Search for a locally-installed Nuke file and install it, if it exists.
 
         Args:
@@ -292,7 +313,7 @@ class WindowsAdapter(BaseAdapter):
             RuntimeError: If the installation failed for some reason.
 
         '''
-        executable = super(WindowsAdapter, cls).get_from_local(source, install)
+        executable = super(WindowsAdapter, cls).install_from_local(source, install)
         command = cls._get_base_command(executable, install)
 
         _, stderr = subprocess.Popen(
