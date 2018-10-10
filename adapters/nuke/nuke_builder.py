@@ -109,17 +109,14 @@ class BaseAdapter(object):
             pkg.version = version.Version(definition.version)
 
     # TODO : Consider making `definition` into a dict
-    @classmethod
-    def make_install(cls, root=''):
+    @staticmethod
+    def make_install():
         '''Try different build methods until something works.
 
         Raises:
             RuntimeError: If all found build methods fail.
 
         '''
-        if not root:
-            root = config.config.get('local_packages_path')
-
         # TODO : Replace with logging messages
         # TODO : Also add a way for the adapter to say which strategies it supports
         #        BUT overridable with an environment variable!
@@ -146,6 +143,17 @@ class BaseAdapter(object):
             '"{strategies}".'.format(strategies=[name for name, _ in strategies]))
 
     @abc.abstractmethod
+    def get_preinstalled_executables(self):
+        return set()
+
+
+class PassThroughAdapter(BaseAdapter):
+    def get_install_file(root):
+        return ''
+
+    def get_from_local(cls, source, install):
+        return ''
+
     def get_preinstalled_executables(self):
         return set()
 

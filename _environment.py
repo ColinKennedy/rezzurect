@@ -69,7 +69,7 @@ def add_git_remote_ssh_build(install_path, system, distribution, architecture):
     '''
     git_command = git_remote.get_git_command(
         # TODO : This URL needs to be "resolved" properly
-        'selecaotwo@192.168.0.11:/srv/git/rez-nuke.git',
+        'selecaotwo@192.168.0.11:/srv/git/nuke.git',
         path=install_path,
         system=system,
         distribution=distribution,

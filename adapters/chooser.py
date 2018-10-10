@@ -42,6 +42,10 @@ def get_adapter(
             'Linux': nuke_builder.LinuxAdapter,
             'Windows': nuke_builder.WindowsAdapter,
         },
+        'nuke': {
+            'Linux': nuke_builder.PassThroughAdapter,
+            'Windows': nuke_builder.PassThroughAdapter,
+        }
     }
 
     try:
@@ -111,7 +115,6 @@ def add_common_commands(package, version, env, alias):
         `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     '''
-    raise ValueError(type(env))
     adapter = get_setting_adapter(package, version, alias)
     adapter.execute()
 
