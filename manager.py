@@ -70,6 +70,14 @@ def get_version_path(root, package, version=''):
 
 
 def get_package_definition(root, package, version=''):
+    if not version and '-' in package:
+        # Note: This section assumes that the package name NEVER contains a "-"
+        #       (which, as far as I know, is enforced by Rez everywhere)
+        #
+        items = package.split('-')
+        package = items[0]
+        version = '-'.join(items[1:])
+
     version_path = get_version_path(root, package, version=version)
 
     if not version_path:
@@ -128,7 +136,7 @@ def build_package_recursively(root, package, version='', build_path=''):
     requirements = pkg.get_package().requires
 
     if not requirements:
-        success = build_package(definition, root)
+        success = build_package(definition, build_path)
 
         if success:
             return
