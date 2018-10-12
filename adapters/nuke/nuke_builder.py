@@ -222,29 +222,23 @@ class LinuxAdapter(BaseAdapter):
 
             LOGGER.debug('Extracting tar file "{tar_path}".'.format(tar_path=tar_path))
 
-            tar = tarfile.open(fileobj=progressbar.ProgressFileObject(tar_path, logger=LOGGER.trace))
-
-            try:
-                tar.extractall(path=os.path.dirname(tar_path))
-            except Exception:
-                LOGGER.exception('Tar file "{tar_path}" failed to extract.'.format(tar_path=tar_path))
-                raise
-            finally:
-                tar.close()
+            with tarfile.open(fileobj=progressbar.ProgressFileObject(tar_path, logger=LOGGER.trace)) as tar:
+                try:
+                    tar.extractall(path=os.path.dirname(tar_path))
+                except Exception:
+                    LOGGER.exception('Tar file "{tar_path}" failed to extract.'.format(tar_path=tar_path))
+                    raise
 
             zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
 
         LOGGER.debug('Unzipping "{zip_file_path}".'.format(zip_file_path=zip_file_path))
 
-        zip_file = zipfile.ZipFile(zip_file_path, 'r')
-
-        try:
-            zip_file.extractall(install)
-        except Exception:  # pylint: disable=broad-except
-            LOGGER.exception('Zip file "{zip_file_path}" failed to unzip.'.format(zip_file_path=zip_file_path))
-            raise
-        finally:
-            zip_file.close()
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+            try:
+                zip_file.extractall(install)
+            except Exception:  # pylint: disable=broad-except
+                LOGGER.exception('Zip file "{zip_file_path}" failed to unzip.'.format(zip_file_path=zip_file_path))
+                raise
 
         executable = os.path.join(install, 'Nuke11.2')
 
