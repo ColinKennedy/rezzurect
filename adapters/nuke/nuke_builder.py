@@ -5,9 +5,7 @@
 
 # IMPORT STANDARD LIBRARIES
 import subprocess
-import functools
 import getpass
-import logging
 import tarfile
 import zipfile
 import ftplib
@@ -152,8 +150,6 @@ class BaseAdapter(object):
         #
         strategies = strategy.get_strategies()
 
-        errors = []
-
         for name, choice in strategies:
             try:
                 choice()
@@ -198,6 +194,24 @@ class LinuxAdapter(BaseAdapter):
         # '''
         super(LinuxAdapter, self).__init__(version, system, architecture)
 
+    @staticmethod
+    def _extract_tar(source):
+        # TODO : This path needs to be a method or something
+        path = os.path.join(source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
+
+        if not os.path.isfile(path):
+            raise EnvironmentError('Tar file "{path}" does not exist.'
+                                   ''.format(path=path))
+
+        LOGGER.debug('Extracting tar file "{path}".'.format(path=path))
+
+        with tarfile.open(fileobj=progressbar.ProgressFileObject(path, logger=LOGGER.trace)) as tar:
+            try:
+                tar.extractall(path=os.path.dirname(path))
+            except Exception:
+                LOGGER.exception('Tar file "{path}" failed to extract.'.format(path=path))
+                raise
+
     def install_from_local(cls, source, install):
         '''Unzip the Nuke file to the given install folder.
 
@@ -212,23 +226,7 @@ class LinuxAdapter(BaseAdapter):
         try:
             zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
         except EnvironmentError:
-            # TODO : This path needs to be a method or something
-            tar_path = os.path.join(
-                source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
-
-            if not os.path.isfile(tar_path):
-                raise EnvironmentError('Tar file "{tar_path}" does not exist.'
-                                       ''.format(tar_path=tar_path))
-
-            LOGGER.debug('Extracting tar file "{tar_path}".'.format(tar_path=tar_path))
-
-            with tarfile.open(fileobj=progressbar.ProgressFileObject(tar_path, logger=LOGGER.trace)) as tar:
-                try:
-                    tar.extractall(path=os.path.dirname(tar_path))
-                except Exception:
-                    LOGGER.exception('Tar file "{tar_path}" failed to extract.'.format(tar_path=tar_path))
-                    raise
-
+            cls._extract_tar(source)
             zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
 
         LOGGER.debug('Unzipping "{zip_file_path}".'.format(zip_file_path=zip_file_path))
