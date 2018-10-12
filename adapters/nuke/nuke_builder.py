@@ -5,8 +5,9 @@
 
 # IMPORT STANDARD LIBRARIES
 import subprocess
-import platform
+import functools
 import getpass
+import logging
 import tarfile
 import zipfile
 import ftplib
@@ -21,13 +22,18 @@ from rez import config
 
 # IMPORT LOCAL LIBRARIES
 from ...strategies import strategy
+from ...utils import progressbar
 from ...vendors import six
 from ... import manager
+from ... import logger
 from . import helper
 
 
-_DEFAULT_VALUE = object()
 # TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
+
+LOGGER = logger.get_logger('nuke')
+LOGGER.info('got logger')
+_DEFAULT_VALUE = object()
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -151,15 +157,11 @@ class BaseAdapter(object):
         for name, choice in strategies:
             try:
                 choice()
-            except Exception as err:  # pylint: disable=broad-except
-                errors.append('strategy "{name}" did not succeed.'.format(name=name))
-                errors.append('Original error: "{err}".'.format(err=err))
+            except Exception:  # pylint: disable=broad-except
+                LOGGER.exception('strategy "{name}" did not succeed.'.format(name=name))
             else:
-                print('strategy "{name}" succeeded.'.format(name=name))
+                LOGGER.info('strategy "{name}" succeeded.'.format(name=name))
                 return
-
-        for message in errors:
-            print(message)
 
         raise RuntimeError(
             'No strategy to install the package suceeded. The strategies were, '
@@ -218,20 +220,29 @@ class LinuxAdapter(BaseAdapter):
                 raise EnvironmentError('Tar file "{tar_path}" does not exist.'
                                        ''.format(tar_path=tar_path))
 
-            # TODO : Add a progress bar here
-            tar = tarfile.open(tar_path)
-            tar.extractall(path=os.path.dirname(tar_path))
-            tar.close()
+            LOGGER.debug('Extracting tar file "{tar_path}".'.format(tar_path=tar_path))
+
+            tar = tarfile.open(fileobj=progressbar.ProgressFileObject(tar_path, logger=LOGGER.trace))
+
+            try:
+                tar.extractall(path=os.path.dirname(tar_path))
+            except Exception:
+                LOGGER.exception('Tar file "{tar_path}" failed to extract.'.format(tar_path=tar_path))
+                raise
+            finally:
+                tar.close()
 
             zip_file_path = super(LinuxAdapter, cls).install_from_local(source, install)
 
+        LOGGER.debug('Unzipping "{zip_file_path}".'.format(zip_file_path=zip_file_path))
+
         zip_file = zipfile.ZipFile(zip_file_path, 'r')
 
-        # TODO : Add a progress bar here
         try:
             zip_file.extractall(install)
         except Exception:  # pylint: disable=broad-except
-            pass
+            LOGGER.exception('Zip file "{zip_file_path}" failed to unzip.'.format(zip_file_path=zip_file_path))
+            raise
         finally:
             zip_file.close()
 

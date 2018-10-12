@@ -1,5 +1,5 @@
 REZZURECT_STRATEGY_ORDER
-
+REZZURECT_LOG_PATH
 
 TODO :
 - needs more logging, in general
