@@ -6,6 +6,7 @@
 # IMPORT STANDARD LIBRARIES
 import functools
 import platform
+import logging
 import imp
 import os
 import re
@@ -17,6 +18,7 @@ from .utils import common
 
 
 _logger.init()
+LOGGER = logging.getLogger('rezzurect.environment')
 
 
 def _get_rez_environment_details():
@@ -110,7 +112,8 @@ def _get_handlers(objects=None):
         module = _resolve_object(path)
 
         if not module:
-            # TODO : Add a logging statement here
+            LOGGER.error('Path "{path}" is not a valid Python module import path.'
+                         ''.format(path=path))
             continue
 
         handlers.append(module.main)
@@ -178,7 +181,7 @@ def _init(
             architecture=architecture,
         )
 
-    adapter = chooser.get_adapter(
+    adapter = chooser.get_package_adapter(
         package,
         version,
         system,

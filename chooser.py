@@ -10,8 +10,7 @@ from .adapters.nuke import nuke_builder
 from .adapters.nuke import nuke_setting
 
 
-# TODO : Rename `get_adapter` to `get_package_adapter`
-def get_adapter(
+def get_package_adapter(
         package,
         version,
         system=platform.system(),
@@ -121,7 +120,7 @@ def add_common_commands(package, version, env, alias):
     install_root = env.INSTALL_ROOT.get()
 
     if not os.path.isdir(install_root) or not os.listdir(install_root):
-        package_adapter = get_adapter(package, version)
+        package_adapter = get_package_adapter(package, version)
 
         for executable in package_adapter.get_preinstalled_executables():
             if os.path.isfile(executable):

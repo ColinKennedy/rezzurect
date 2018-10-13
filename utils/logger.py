@@ -13,7 +13,7 @@ def attach_trace_level():
 
     def trace(self, message, *args, **kws):
         if self.isEnabledFor(trace_number):
-            # Yes, logger takes its '*args' as 'args'.
+            # Yes, logger takes its `*args` as `args`.
             self._log(trace_number, message, args, **kws)
 
     logger_class = logging.getLoggerClass()
