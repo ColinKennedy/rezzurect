@@ -21,26 +21,20 @@ def attach_trace_level():
     logging.TRACE = trace_number
 
 
-# TODO : Make this into a global logger
-def get_logger(name):
+def init():
     attach_trace_level()
 
     log_base_location = os.getenv('REZZURECT_LOG_PATH', '/tmp/.rezzurect')
 
-    logger = logging.getLogger('rezzurect.{name}'.format(name=name))
-
-    logger.setLevel(logging.TRACE)
-
     if not os.path.isdir(log_base_location):
         os.makedirs(log_base_location)
 
-    path = os.path.join(log_base_location, 'rezzurect_{name}.log'.format(name=name))
+    logger = logging.getLogger('rezzurect')
+    logger.setLevel(logging.TRACE)
 
     # Add the log message handler to the logger
+    path = os.path.join(log_base_location, 'rezzurect.log')
     handler = handlers.RotatingFileHandler(path, maxBytes=50000000, backupCount=5)
-    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-
+    handler.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+    handler.setLevel(logging.TRACE)
     logger.addHandler(handler)
-
-    return logger
