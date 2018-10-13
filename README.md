@@ -9,7 +9,6 @@ TODO :
 - Move "strategies" into the Nuke adapter, instead of keeping it global
  - Once done, delete the PassthroughAdapter for the Nuke package
  - Add env-vars which can be used to override the strategies - globally and per-package
-- Possibly remove / move prepend_dict.py
 
 - needs more logging, in general
 - Add documentation about the environment variables
