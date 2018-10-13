@@ -6,6 +6,7 @@
 # IMPORT STANDARD LIBRARIES
 import subprocess
 import getpass
+import logging
 import tarfile
 import zipfile
 import ftplib
@@ -21,16 +22,17 @@ from rez import config
 # IMPORT LOCAL LIBRARIES
 from ...strategies import strategy
 from ...utils import progressbar
-from ...utils import logger
 from ...vendors import six
 from ... import manager
 from . import helper
 
 
 # TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
-
-LOGGER = logger.get_logger('nuke')
-LOGGER.info('got logger')
+# TODO : Remove this `init()`
+from ...utils import logger as _logger
+_logger.init()
+LOGGER = logging.getLogger('rezzurect.nuke')
+LOGGER.info('got loggerzzz BOIS')
 _DEFAULT_VALUE = object()
 
 
