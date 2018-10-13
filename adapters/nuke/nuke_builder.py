@@ -28,12 +28,8 @@ from . import helper
 
 
 # TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
-# TODO : Remove this `init()`
-from ...utils import logger as _logger
-_logger.init()
-LOGGER = logging.getLogger('rezzurect.nuke')
-LOGGER.info('got loggerzzz BOIS')
 _DEFAULT_VALUE = object()
+LOGGER = logging.getLogger('rezzurect.nuke_builder')
 
 
 @six.add_metaclass(abc.ABCMeta)

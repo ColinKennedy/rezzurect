@@ -11,9 +11,12 @@ import os
 import re
 
 # IMPORT LOCAL LIBRARIES
+from .utils import logger as _logger
 from .strategies import strategy
 from .utils import common
-from . import chooser
+
+
+_logger.init()
 
 
 def _get_rez_environment_details():
@@ -162,6 +165,9 @@ def _init(
             If nothing is given, the user's current architecture is used, instead.
 
     '''
+    # TODO : Consider removing this
+    from . import chooser
+
     for handler in _get_handlers():
         handler(
             source_path,
