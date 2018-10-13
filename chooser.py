@@ -6,8 +6,10 @@ import platform
 import os
 
 # IMPORT LOCAL LIBRARIES
-from .adapters.nuke import nuke_builder
 from .adapters.nuke import nuke_setting
+
+
+_ADAPTERS = dict()
 
 
 def get_package_adapter(
@@ -36,23 +38,12 @@ def get_package_adapter(
         `BaseAdapter`: The found adapter.
 
     '''
-    options = {
-        'nuke_installation': {
-            'Linux': nuke_builder.LinuxAdapter,
-            'Windows': nuke_builder.WindowsAdapter,
-        },
-        'nuke': {
-            'Linux': nuke_builder.PassThroughAdapter,
-            'Windows': nuke_builder.PassThroughAdapter,
-        }
-    }
-
     try:
-        group = options[package]
+        group = _ADAPTERS[package]
     except KeyError:
         raise NotImplementedError(
             'Package "{package}" is not supported. Options were, "{keys}"'.format(
-                package=package, keys=list(options)))
+                package=package, keys=list(_ADAPTERS)))
 
     try:
         adapter = group[system]
@@ -127,3 +118,10 @@ def add_common_commands(package, version, env, alias):
                 # Found a fallback system-wide install
                 env.PATH.append(os.path.dirname(executable))
                 break
+
+
+def register_platform_adapter(adapter, name, system):
+    _ADAPTERS.setdefault(name, dict())
+    _ADAPTERS[name].setdefault(system, dict())
+
+    _ADAPTERS[name][system] = adapter
