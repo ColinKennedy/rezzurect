@@ -4,7 +4,7 @@
 '''A set of functions for downloading executable files over the Internet.'''
 
 # IMPORT LOCAL LIBRARIES
-from .. import common
+from ..utils import common
 
 
 def _get_url(package, system, distribution, architecture):

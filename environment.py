@@ -12,8 +12,8 @@ import re
 
 # IMPORT LOCAL LIBRARIES
 from .strategies import strategy
-from .adapters import chooser
-from . import common
+from .utils import common
+from . import chooser
 
 
 def _get_rez_environment_details():

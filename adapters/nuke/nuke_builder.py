@@ -21,9 +21,9 @@ from rez import config
 # IMPORT LOCAL LIBRARIES
 from ...strategies import strategy
 from ...utils import progressbar
+from ...utils import logger
 from ...vendors import six
 from ... import manager
-from ... import logger
 from . import helper
 
 

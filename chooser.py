@@ -6,8 +6,8 @@ import platform
 import os
 
 # IMPORT LOCAL LIBRARIES
-from .nuke import nuke_builder
-from .nuke import nuke_setting
+from .adapters.nuke import nuke_builder
+from .adapters.nuke import nuke_setting
 
 
 # TODO : Rename `get_adapter` to `get_package_adapter`

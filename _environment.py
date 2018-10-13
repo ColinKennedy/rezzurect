@@ -15,7 +15,7 @@ from rez import config
 from .strategies import git_remote
 from .strategies import internet
 from .strategies import strategy
-from . import common
+from .utils import common
 
 
 def add_from_internet_build(package, system, distribution, architecture):
@@ -137,6 +137,7 @@ def main(
 
     '''
     package_name = get_package_name(source_path)
+
     # add_from_internet_build(package_name, system, distribution, architecture)
 
     # add_git_remote_ssh_build(install_path, system, distribution, architecture)

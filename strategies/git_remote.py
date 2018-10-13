@@ -10,7 +10,7 @@ import platform
 import os
 
 # IMPORT LOCAL LIBRARIES
-from .. import common
+from ..utils import common
 
 
 def clone_git_repository(url, path, silent=False):
