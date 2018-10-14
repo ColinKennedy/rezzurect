@@ -11,7 +11,6 @@ import getpass
 import glob
 import imp
 import os
-import os
 
 # IMPORT THIRD-PARTY LIBRARIES
 from rez.vendor.version import version as rez_version
@@ -54,6 +53,11 @@ def copy_rezzurect_to(path):
 
 
 def sort_by_version(version, item):
+    '''int: If the given version is found, send it to the front.
+
+    Sort the other non-matching items alphabetically.
+
+    '''
     base = os.path.basename(item)
 
     if base == version:
@@ -63,6 +67,21 @@ def sort_by_version(version, item):
 
 
 def get_version_path(root, package, version=''):
+    '''Get the absolute path to a package's version-install folder.
+
+    Args:
+        root (str):
+            The absolute path to where all installed packages live.
+        package (str):
+            The name of the package to get the version path of.
+        version (str, optional):
+            The specific version to get the path of. If no version is given,
+            the latest version is used, instead. Default: "".
+
+    Returns:
+        str: The found path, if any.
+
+    '''
     if not version and '-' in package:
         package, version = package.split('-')
 
@@ -79,6 +98,28 @@ def get_version_path(root, package, version=''):
 
 
 def get_package_definition(root, package, version=''):
+    '''Import a Rez package's package.py file as a Python module.
+
+    Args:
+        root (str):
+            The absolute path to where all installed packages2live.
+        package (str):
+            The name of the package to get the version path of.
+        version (str, optional):
+            The specific version to get the path of. If no version is given,
+            the latest version is used, instead. Default: "".
+
+    Raises:
+        EnvironmentError:
+            If the given package has missing or incomplete data.
+            This is usually an indicator of a much bigger problem that requires
+            intervention of a developer so, instead of returning early, we
+            raise an exception instead.
+
+    Returns:
+        module or NoneType: The found package.py file, if any.
+
+    '''
     if not version and '-' in package:
         # Note: This section assumes that the package name NEVER contains a "-"
         #       (which, as far as I know, is enforced by Rez everywhere)
@@ -90,7 +131,7 @@ def get_package_definition(root, package, version=''):
     version_path = get_version_path(root, package, version=version)
 
     if not version_path:
-        raise EnvironmentError(('No version could be found'))
+        raise EnvironmentError('No version could be found')
 
     package_path = os.path.join(version_path, 'package.py')
 
@@ -108,6 +149,16 @@ def get_package_definition(root, package, version=''):
 
 
 def make_package(definition, build_path):
+    '''Install our predefined Rez package.py file to a separate build folder.
+
+    Args:
+        definition (module): The package.py to make a copy to into `build_path`.
+        build_path (str): The absolute path to install `definition` to.
+
+    Returns:
+        `rez.package_maker__.PackageMaker`: The created package.
+
+    '''
     with package_maker.make_package(definition.name, build_path, skip_existing=True) as pkg:
         mirror('authors', definition, pkg, default=[getpass.getuser()])
         mirror('commands', definition, pkg)
@@ -123,8 +174,24 @@ def make_package(definition, build_path):
     return pkg
 
 
-def build_package(definition, root):
-    root = os.path.dirname(definition.__file__)
+def build_package(root):
+    '''Install a Rez package definition.
+
+    Args:
+        root (str):
+            The absolute path to a directory which contains a package.py and
+            some build instructions (cmake, bez, etc).
+
+    Returns:
+        str: An error messages that resulted from our command, if any.
+
+    '''
+    # TODO : IMPORTANT: Change this into a Python API command!
+    #        This command requires rez to be installed on the user's system
+    #        which obviously is not an assumption that we are allowed to make.
+    #        This subprocess.Popen command is a TEMPORARY hack just to get
+    #        something working.
+    #
     commands = [
         'cd "{root}" && rez-build --install'.format(root=root),
     ]
@@ -136,6 +203,21 @@ def build_package(definition, root):
 
 
 def build_package_recursively(root, package, version='', build_path=''):
+    '''Build a package by building its required packages recursively.
+
+    Basically the logic goes like this:
+        - Evaluate if a package has been built. If it has been built, do nothing.
+        - If a package has no requirements, build it.
+        - If a package has requirements and that requirement isn't installed,
+          then evaluate and build it, too.
+        - Repeat until all packages are built.
+
+    Raises:
+        RuntimeError:
+            If a package was build incorrectly or
+            if an attempt to build a package failed.
+
+    '''
     definition = get_package_definition(root, package, version)
 
     if not definition:
@@ -145,11 +227,14 @@ def build_package_recursively(root, package, version='', build_path=''):
     requirements = pkg.get_package().requires
 
     if not requirements:
-        stderr = build_package(definition, build_path)
+        stderr = build_package(os.path.dirname(definition.__file__))
 
         if not stderr:
             return
 
+        # TODO : Consider deleting the contents of `os.path.dirname(definition.__file__)`
+        #        before erroring out, here
+        #
         raise RuntimeError('Definition "{definition}" failed to build. Stderr "{stderr}"'
                            ''.format(definition=definition.__file__, stderr=stderr))
 
@@ -161,6 +246,17 @@ def build_package_recursively(root, package, version='', build_path=''):
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):
+    '''A simple helper function that sets variables from one object onto another.
+
+    Args:
+        attribute (str): The attribute to mirror.
+        module (object): The object which will be used to mirror `attribute`.
+        package (object): The object to mirror `attribute` onto.
+        default (object, optional):
+            A value to use if `attribute` does not exist. If no default is
+            specified then `attribute` is not mirrored.
+
+    '''
     try:
         value = getattr(module, attribute)
     except AttributeError:
@@ -173,6 +269,18 @@ def mirror(attribute, module, package, default=_DEFAULT_VALUE):
 
 
 def install(package, root, build_path, version=''):
+    '''Install a given package into .
+
+    Args:
+        root (str):
+            The absolute path to where all installed packages live.
+        build_path (str):
+            The absolute path to install the package to.
+        version (str, optional):
+            The specific version to get the path of. If no version is given,
+            the latest version is used, instead. Default: "".
+
+    '''
     package = package.split('-')[0]
 
     try:
@@ -180,7 +288,3 @@ def install(package, root, build_path, version=''):
         resolved_context.ResolvedContext(['{}-{}'.format(package, version)])
     except PACKAGE_EXCEPTIONS:
         build_package_recursively(root, package, version=version, build_path=build_path)
-
-
-if __name__ == '__main__':
-    main()

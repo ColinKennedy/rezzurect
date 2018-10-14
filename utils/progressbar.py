@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A module which is used to show progress bars.
+
+Mainly, when packages are installing, these classes and functions help us know
+that processes are completing (and not just hanging).
+
+'''
+
 # IMPORT STANDARD LIBRARIES
 from __future__ import division
 import tarfile

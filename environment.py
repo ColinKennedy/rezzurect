@@ -13,7 +13,6 @@ import re
 
 # IMPORT LOCAL LIBRARIES
 from .utils import logger as _logger
-from .strategies import strategy
 from .utils import common
 
 
@@ -43,18 +42,11 @@ def _resolve_object(path):
 
     '''
     if os.path.isabs(path):
-        try:
-            return imp.load_source('', path)
-        except ImportError:
-            return
+        return imp.load_source('', path)
 
-    try:
-        module = __import__(path)
-    except ImportError:
-        return
-
-    modules = path.split('.')
     item = module
+    module = __import__(path)
+    modules = path.split('.')
 
     for index in range(1, len(modules)):
         item = getattr(item, modules[index])
@@ -109,11 +101,10 @@ def _get_handlers(objects=None):
     handlers = []
 
     for path in paths:
-        module = _resolve_object(path)
-
-        if not module:
-            LOGGER.error('Path "{path}" is not a valid Python module import path.'
-                         ''.format(path=path))
+        try:
+            module = _resolve_object(path)
+        except ImportError:
+            LOGGER.error('Path "%s" is not a valid Python module import path.', path)
             continue
 
         handlers.append(module.main)

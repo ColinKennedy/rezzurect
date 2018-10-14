@@ -19,12 +19,12 @@ from .utils import common
 
 # TODO : Possibly get rid of `build_path`
 def main(
-    source_path,
-    build_path,
-    install_path,
-    system=platform.system(),
-    distribution='-'.join(platform.dist()),
-    architecture=common.get_architecture(),
+        source_path,
+        build_path,
+        install_path,
+        system=platform.system(),
+        distribution='-'.join(platform.dist()),
+        architecture=common.get_architecture(),
 ):
     '''Load all of the user's defined build methods.
 
