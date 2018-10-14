@@ -43,9 +43,9 @@ def _resolve_object(path):
     if os.path.isabs(path):
         return imp.load_source('', path)
 
-    item = module
     module = __import__(path)
     modules = path.split('.')
+    item = module
 
     for index in range(1, len(modules)):
         item = getattr(item, modules[index])
