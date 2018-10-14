@@ -182,8 +182,8 @@ class LinuxAdapter(BaseNukeAdapter):
                                    ''.format(install=install))
 
         # Reference: https://stackoverflow.com/questions/12791997
-        st = os.stat(executable)
-        os.chmod(executable, st.st_mode | stat.S_IEXEC)
+        executable_stats = os.stat(executable)
+        os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
 
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.

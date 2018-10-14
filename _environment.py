@@ -17,10 +17,8 @@ from .adapters.nuke import nuke_builder
 from .utils import common
 
 
-# TODO : Possibly get rid of `build_path`
 def main(
         source_path,
-        build_path,
         install_path,
         system=platform.system(),
         distribution='-'.join(platform.dist()),

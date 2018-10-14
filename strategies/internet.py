@@ -27,7 +27,8 @@ def _get_url(package, version, system, distribution, architecture):
     }
 
     options = [
-        (package, system, distribution, architecture),
+        (package, version, system, distribution, architecture),
+        (package, version, system, architecture),
         (package, system, architecture),
     ]
 
@@ -45,7 +46,8 @@ def _get_url(package, version, system, distribution, architecture):
 
 def _install_from_url(url):
     '''Download the contents of the URL.'''
-    raise NotImplementedError('Need to write this.')
+    # TODO : Write this
+    raise NotImplementedError('Need to write this.' + url)
 
 
 def download(package, version, system, distribution, architecture):

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# TODO : Renamed to "base_setting.py"
 '''A set of adapters to bootstrap Rez packages.'''
 
 # IMPORT STANDARD LIBRARIES
@@ -49,7 +50,7 @@ class AbstractBaseAdapter(object):
         self.__make_common_aliases(command)
 
 
-class BaseAdapter(AbstractBaseAdapter):
+class BaseAdapter(AbstractBaseAdapter):  # pylint: disable=abstract-method
 
     '''An adapter that implements a DCC-specific command for the user to run.'''
 
