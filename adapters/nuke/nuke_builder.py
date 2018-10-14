@@ -17,8 +17,8 @@ import abc
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-from rez import package_maker__ as package_maker
 from rez.vendor.version import version as version_
+from rez import package_maker__ as package_maker
 from rez import config
 
 # IMPORT LOCAL LIBRARIES
@@ -30,7 +30,6 @@ from ... import manager
 from . import helper
 
 
-# TODO : Generally speaking, in this document, all "11.2v3" hardcoded stuff needs to be REMOVED
 _DEFAULT_VALUE = object()
 LOGGER = logging.getLogger('rezzurect.nuke_builder')
 
@@ -56,19 +55,24 @@ class BaseAdapter(object):
         self.architecture = architecture
 
     @staticmethod
-    def _get_major_minor_version(text):
+    def _get_version_parts(text):
         match = helper.VERSION_PARSER.match(text)
 
         if not match:
-            return ('', '')
+            return ('', '', '')
 
-        return (match.group('major'), match.group('minor'))
+        return (match.group('major'), match.group('minor'), match.group('patch'))
 
-    @staticmethod
-    @abc.abstractmethod
-    def get_install_file(root):
+    @classmethod
+    def get_install_file(cls, root, version):
         '''str: Get the absolute path to where the expected Nuke install file is.'''
-        return ''
+        major, minor, patch = cls._get_version_parts(version)
+
+        return os.path.join(
+            root,
+            'archive',
+            cls._install_file_name_template.format(major=major, minor=minor, patch=patch),
+        )
 
     @abc.abstractmethod
     def install_from_local(self, source, install):
@@ -88,7 +92,7 @@ class BaseAdapter(object):
             str: The absolute path to the executable file which is used for installation.
 
         '''
-        executable = self.get_install_file(source)
+        executable = self.get_install_file(source, self.version)
 
         if not os.path.isfile(executable):
             raise EnvironmentError(
@@ -212,6 +216,7 @@ class LinuxAdapter(BaseAdapter):
     '''An adapter for installing Nuke onto a Linux machine.'''
 
     name = 'nuke'
+    _install_file_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer'
 
     def __init__(self, version, system, architecture):
         # '''Create the instance and store the user's architecture.
@@ -223,9 +228,14 @@ class LinuxAdapter(BaseAdapter):
         super(LinuxAdapter, self).__init__(version, system, architecture)
 
     @staticmethod
-    def _extract_tar(source):
-        # TODO : This path needs to be a method or something
-        path = os.path.join(source, 'archive', 'Nuke11.2v3-linux-x86-release-64.tgz')
+    def _extract_tar(source, version):
+        (major, minor, patch) = version
+
+        file_name = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'.format(
+            major=major, minor=minor, patch=patch,
+        )
+
+        path = os.path.join(source, 'archive', file_name)
 
         if not os.path.isfile(path):
             raise EnvironmentError('Tar file "{path}" does not exist.'
@@ -251,10 +261,12 @@ class LinuxAdapter(BaseAdapter):
                 The absolute directory where `source` will be installed into.
 
         '''
+        major, minor, patch = self._get_version_parts(self.version)
+
         try:
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
         except EnvironmentError:
-            self._extract_tar(source)
+            self._extract_tar(source, (major, minor, patch))
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
 
         LOGGER.debug('Unzipping "{zip_file_path}".'.format(zip_file_path=zip_file_path))
@@ -266,7 +278,8 @@ class LinuxAdapter(BaseAdapter):
                 LOGGER.exception('Zip file "{zip_file_path}" failed to unzip.'.format(zip_file_path=zip_file_path))
                 raise
 
-        executable = os.path.join(install, 'Nuke11.2')
+        executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
+        executable = os.path.join(install, executable)
 
         if not os.path.isfile(executable):
             raise EnvironmentError('Zip failed to extract to folder "{install}".'
@@ -276,13 +289,8 @@ class LinuxAdapter(BaseAdapter):
         st = os.stat(executable)
         os.chmod(executable, st.st_mode | stat.S_IEXEC)
 
-    @staticmethod
-    def get_install_file(root):
-        '''str: Get the absolute path to where the expected Nuke install file is.'''
-        return os.path.join(root, 'archive', 'Nuke11.2v3-linux-x86-release-64-installer')
-
     def get_preinstalled_executables(self):
-        major, minor = self._get_major_minor_version(self.version)
+        major, minor = self._get_version_parts(self.version)
 
         if not major:
             raise RuntimeError(
@@ -308,6 +316,7 @@ class WindowsAdapter(BaseAdapter):
     '''An adapter for installing Nuke onto a Windows machine.'''
 
     name = 'nuke'
+    _install_file_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.exe'
 
     def __init__(self, version, system, architecture):
         # '''Create the instance and store the user's architecture.
@@ -323,11 +332,6 @@ class WindowsAdapter(BaseAdapter):
         '''str: The command used to install Nuke, on Windows.'''
         return '{executable} /dir="{root}" /silent'.format(
             executable=executable, root=root)
-
-    @staticmethod
-    def get_install_file(root):
-        '''str: Get the absolute path to where the expected Nuke install file is.'''
-        return os.path.join(root, 'archive', 'Nuke11.2v3-win-x86-release-64.exe')
 
     def install_from_local(self, source, install):
         '''Search for a locally-installed Nuke file and install it, if it exists.
@@ -354,7 +358,7 @@ class WindowsAdapter(BaseAdapter):
                                ''.format(stderr=stderr))
 
     def get_preinstalled_executables(self):
-        major, minor = self._get_major_minor_version(self.version)
+        major, minor, _ = self._get_version_parts(self.version)
 
         if not major:
             raise RuntimeError(

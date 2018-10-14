@@ -22,6 +22,15 @@ import rezzurect
 
 
 _DEFAULT_VALUE = object()
+PACKAGE_EXCEPTIONS = (
+    # This happens if no versions of a package have been installed yet
+    exceptions.PackageFamilyNotFoundError,
+
+    # This happens if a package has at least one installed version but it is
+    # not the version that you trying to query in `packages`
+    #
+    exceptions.PackageNotFoundError,
+)
 
 
 def copy_rezzurect_to(path):
@@ -147,7 +156,7 @@ def build_package_recursively(root, package, version='', build_path=''):
     for requirement in requirements:
         try:
             resolved_context.ResolvedContext([requirement])
-        except exceptions.PackageFamilyNotFoundError:
+        except PACKAGE_EXCEPTIONS:
             build_package_recursively(root, str(requirement), build_path=build_path)
 
 
@@ -164,9 +173,12 @@ def mirror(attribute, module, package, default=_DEFAULT_VALUE):
 
 
 def install(package, root, build_path, version=''):
+    package = package.split('-')[0]
+
     try:
-        resolved_context.ResolvedContext([package])
-    except exceptions.PackageFamilyNotFoundError:
+        # Request the specific package-version
+        resolved_context.ResolvedContext(['{}-{}'.format(package, version)])
+    except PACKAGE_EXCEPTIONS:
         build_package_recursively(root, package, version=version, build_path=build_path)
 
 
