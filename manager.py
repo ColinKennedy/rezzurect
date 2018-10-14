@@ -246,7 +246,7 @@ def build_package_recursively(root, package, version='', build_path=''):
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):
-    '''A simple helper function that sets variables from one object onto another.
+    '''Set set an attribute from one object onto another, if needed.
 
     Args:
         attribute (str): The attribute to mirror.
