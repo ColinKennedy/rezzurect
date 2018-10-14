@@ -7,7 +7,7 @@
 from ..utils import common
 
 
-def _get_url(package, system, distribution, architecture):
+def _get_url(package, version, system, distribution, architecture):
     '''Find the URL for the package and system and return it.
 
     Args:
@@ -22,7 +22,8 @@ def _get_url(package, system, distribution, architecture):
     '''
     # TODO : Move this to a config file somewhere else
     references = {
-        ('nuke', 'Linux', 'x86_64'): 'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
+        ('nuke', '11.2v3', 'Linux', 'x86_64'):
+            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
     }
 
     options = [
@@ -47,11 +48,12 @@ def _install_from_url(url):
     raise NotImplementedError('Need to write this.')
 
 
-def download(package, system, distribution, architecture):
+def download(package, version, system, distribution, architecture):
     '''Download a package from online, using http/https.
 
     Args:
         package (str): The name of the package to get a URL for. Example: "houdini".
+        version (str): The specific version of `package` to download.
         system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
         architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
         distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
@@ -60,7 +62,7 @@ def download(package, system, distribution, architecture):
         RuntimeError: If no URL for the given settings could be found.
 
     '''
-    url = _get_url(package, system, distribution, architecture)
+    url = _get_url(package, version, system, distribution, architecture)
 
     if not url:
         raise RuntimeError('No URL could be found for "{data}".'.format(

@@ -4,7 +4,6 @@
 '''The main module which is used to initialize Rez-build options.'''
 
 # IMPORT STANDARD LIBRARIES
-import functools
 import platform
 import logging
 import imp
@@ -114,8 +113,6 @@ def _get_handlers(objects=None):
 
 # TODO : Check to make sure I still use these
 def _init(
-        package,
-        version,
         source_path,
         build_path,
         install_path,
@@ -132,10 +129,6 @@ def _init(
     # into the REZZURECT_ENVIRONMENT_MODULES environment variable.
 
     # Args:
-    #     package (str):
-    #         The name of the Rez package to install.
-    #     version (str):
-    #         The specific install of `package`.
     #     source_path (str):
     #         The absolute path to the package definition folder.
     #     build_path (str):
@@ -165,9 +158,10 @@ def _init(
 
 
 # TODO : Consider removing `install_path` since a module definition might be easier to work with
+# TODO : Consider merging with and `_init` into one function since our code is
+#        much simpler now
+#
 def init(
-        package,
-        version,
         source_path,
         build_path,
         install_path,
@@ -217,13 +211,4 @@ def init(
         if not architecture:
             architecture = architecture_
 
-    _init(
-        package,
-        version,
-        source_path,
-        build_path,
-        install_path,
-        system,
-        distribution,
-        architecture,
-    )
+    _init(source_path, build_path, install_path, system, distribution, architecture)

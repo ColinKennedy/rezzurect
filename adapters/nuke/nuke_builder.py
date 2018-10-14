@@ -42,18 +42,6 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
 
     _install_file_name_template = ''
 
-    def __init__(self, version, architecture):
-        '''Create the instance and store the user's architecture.
-
-        Args:
-            version (str):
-                The specific install of `package`.
-            architecture (str):
-                The bits of the `system`. Example: "x86_64", "AMD64", etc.
-
-        '''
-        super(BaseNukeAdapter, self).__init__(version, architecture)
-
     @staticmethod
     def _get_version_parts(text):
         '''tuple[str, str, str]: Find the major, minor, and patch data of `text`.'''
@@ -121,18 +109,6 @@ class LinuxAdapter(BaseNukeAdapter):
     name = 'nuke'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer'
 
-    def __init__(self, version, architecture):
-        '''Create the instance and store the user's architecture.
-
-        Args:
-            version (str):
-                The specific install of `package`.
-            architecture (str):
-                The bits of the `system`. Example: "x86_64", "AMD64", etc.
-
-        '''
-        super(LinuxAdapter, self).__init__(version, architecture)
-
     @classmethod
     def _extract_tar(cls, source, version):
         '''Extract the Nuke TAR archive to get the Nuke ZIP installer.
@@ -158,13 +134,13 @@ class LinuxAdapter(BaseNukeAdapter):
             raise EnvironmentError('Tar file "{path}" does not exist.'
                                    ''.format(path=path))
 
-        LOGGER.debug('Extracting tar file "{path}".'.format(path=path))
+        LOGGER.debug('Extracting tar file "%s".', path)
 
         with tarfile.open(fileobj=progressbar.ProgressFileObject(path, logger=LOGGER.trace)) as tar:
             try:
                 tar.extractall(path=os.path.dirname(path))
             except Exception:
-                LOGGER.exception('Tar file "{path}" failed to extract.'.format(path=path))
+                LOGGER.exception('Tar file "%s" failed to extract.', path)
                 raise
 
     def install_from_local(self, source, install):
@@ -189,13 +165,13 @@ class LinuxAdapter(BaseNukeAdapter):
             self._extract_tar(source, (major, minor, patch))
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
 
-        LOGGER.debug('Unzipping "{zip_file_path}".'.format(zip_file_path=zip_file_path))
+        LOGGER.debug('Unzipping "%s".', zip_file_path)
 
         with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
             try:
                 zip_file.extractall(install)
             except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('Zip file "{zip_file_path}" failed to unzip.'.format(zip_file_path=zip_file_path))
+                LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
                 raise
 
         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
@@ -249,18 +225,6 @@ class WindowsAdapter(BaseNukeAdapter):
 
     name = 'nuke'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.exe'
-
-    def __init__(self, version, architecture):
-        '''Create the instance and store the user's architecture.
-
-        Args:
-            version (str):
-                The specific install of `package`.
-            architecture (str):
-                The bits of the `system`. Example: "x86_64", "AMD64", etc.
-
-        '''
-        super(WindowsAdapter, self).__init__(version, architecture)
 
     @staticmethod
     def _get_base_command(executable, root):
@@ -379,7 +343,7 @@ def add_link_build(adapter):
 
 
 def add_from_internet_build(package, system, distribution, architecture, adapter):
-    internet.download(package, system, distribution, architecture)
+    internet.download(package, adapter.version, system, distribution, architecture)
     raise NotImplementedError("Need to write this")
 
 
@@ -414,7 +378,7 @@ def register(source_path, install_path, system, distribution, architecture):
 
         add_nuke_from_internet_build = functools.partial(
             add_from_internet_build,
-            internet.download, 'nuke', system, distribution, architecture)
+            'nuke', system, distribution, architecture)
         add_nuke_local_filesystem_build = functools.partial(
             add_local_filesystem_build, source_path, install_path)
 

@@ -8,7 +8,7 @@ from .. import common_setting
 from . import helper
 
 
-class NukeAdapter(common_setting.AbstractBaseAdapter):
+class NukeAdapter(common_setting.BaseAdapter):
 
     '''An adapter which is used to set up common settings / aliases for Nuke.'''
 

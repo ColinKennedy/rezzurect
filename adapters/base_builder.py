@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A DCC-agnostic adapter class to inherit and extend for software.'''
+
 # IMPORT STANDARD LIBRARIES
 import logging
 import abc
@@ -88,8 +90,7 @@ class BaseAdapter(object):
 
             return items
 
-        LOGGER.debug('Finding strategy order for "{obj.__name__}".'
-                     ''.format(obj=cls))
+        LOGGER.debug('Finding strategy order for "%s".', cls.__name__)
 
         default_order = [name for name, _ in cls.strategies]
 
@@ -97,19 +98,16 @@ class BaseAdapter(object):
                                   ''.format(name=cls.name.upper()), '')
 
         if package_order:
-            LOGGER.debug('Package order "{package_order}" was found.'.format(
-                package_order=package_order))
+            LOGGER.debug('Package order "%s" was found.', package_order)
             return _split(package_order)
 
         global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
 
         if global_order:
-            LOGGER.debug('Global order "{global_order}" was found.'.format(
-                global_order=global_order))
+            LOGGER.debug('Global order "%s" was found.', global_order)
             return _split(global_order)
 
-        LOGGER.debug('Default order "{default_order}" will be used.'.format(
-            default_order=default_order))
+        LOGGER.debug('Default order "%s" will be used.', default_order)
 
         return default_order
 
@@ -139,9 +137,9 @@ class BaseAdapter(object):
             try:
                 choice(self)
             except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('strategy "{name}" did not succeed.'.format(name=name))
+                LOGGER.exception('Strategy "%s" did not succeed.', name)
             else:
-                LOGGER.info('strategy "{name}" succeeded.'.format(name=name))
+                LOGGER.info('Strategy "%s" succeeded.', name)
                 return
 
         raise RuntimeError(

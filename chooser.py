@@ -71,7 +71,7 @@ def get_setting_adapter(package, version, alias=None):
             The name of the package to get aliases of.
         version (str):
             The type of the `package` to get aliases of.
-        alias (`rez.rex.ActionManager.alias[str, str]`, optional):
+        alias (callable[str, str], optional):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
 
@@ -105,7 +105,7 @@ def add_common_commands(package, version, env, alias):
             It's up to the adapter to parse the version properly.
         env (`rez.utils.data_utils.AttrDictWrapper`):
             The Rez environment which represents `package`.
-        alias (`callable[str, str]`):
+        alias (callable[str, str]):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
 
