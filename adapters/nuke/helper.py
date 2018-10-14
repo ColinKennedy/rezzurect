@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''Any information that is used between one or more adapter modules.'''
 
 # IMPORT STANDARD LIBRARIES
 import re

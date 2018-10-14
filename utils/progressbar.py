@@ -10,20 +10,43 @@ that processes are completing (and not just hanging).
 
 # IMPORT STANDARD LIBRARIES
 from __future__ import division
-import tarfile
 import math
 import io
 import os
 
 
+# Reference: https://stackoverflow.com/questions/3667865/python-tarfile-progress-output
 class ProgressFileObject(io.FileIO):
+
+    '''An object which is used in TAR callbacks to log extraction progress.
+
+    This object prints every 10% of the extraction, to avoid being too spammy.
+
+    '''
+
     def __init__(self, path, logger=None, *args, **kwargs):
+        '''Create the object and store the given logger.
+
+        Args:
+            path (str):
+                The absolute path to the TAR file to extract.
+            logger (`logging.Logger` or NoneType, optional):
+                Some logger to use to print the progress.
+                If no logger is given, the progress messages are printed, instead.
+                Default is None.
+            *args (tuple):
+                Optional args for this object.
+            *kwargs (tuple):
+                Optional args for this object.
+
+        '''
         super(ProgressFileObject, self).__init__(path, *args, **kwargs)
         self._steps = set()
         self._total_size = os.path.getsize(path)
         self._logger = logger
 
     def read(self, size):
+        '''Read the next few bytes of the archive and print the progress.'''
         percent = self.tell() / self._total_size
         tens = int(math.floor(percent * 10)) * 10  # 10, 20, 30 ... 100
 
@@ -39,22 +62,3 @@ class ProgressFileObject(io.FileIO):
                 print(message)
 
         return super(ProgressFileObject, self).read(size)
-
-
-def get_file_progress_class(function):
-    class FileProgressFileObject(tarfile.ExFileObject):
-        def read(self, size, *args):
-            function(self.name, self.position, self.size)
-            return super(FileProgressFileObject, self).read(size, *args)
-
-    return FileProgressFileObject
-
-
-def on_progress(filename, position, total_size, logger=None):
-    message = '{filename}: {position} of {total_size}'.format(
-        filename=filename, position=position, total_size=total_size)
-
-    if logger:
-        logger(message)
-    else:
-        print(message)

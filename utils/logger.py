@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The main logger environment for rezzurect.
+
+`init` should be called once (and only once) to set up the parent logger which
+all other loggers will inherit from.
+
+'''
+
 # IMPORT STANDARD LIBRARIES
 from logging import handlers
 import logging
@@ -8,6 +15,12 @@ import os
 
 
 def attach_trace_level():
+    '''Create a new log level called "TRACE" and make it some level below DEBUG.
+
+    This level is meant for very spammy output which may be useful to see but
+    don't make sense to put into DEBUG.
+
+    '''
     trace_number = logging.DEBUG - 1
     logging.addLevelName(trace_number, 'TRACE')
 
@@ -22,6 +35,7 @@ def attach_trace_level():
 
 
 def init():
+    '''Create a new log level called TRACE and create the parent rezzurect logger.'''
     attach_trace_level()
 
     log_base_location = os.getenv('REZZURECT_LOG_PATH', '/tmp/.rezzurect')

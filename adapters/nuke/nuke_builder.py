@@ -380,15 +380,36 @@ def add_link_build(adapter):
 
 def add_from_internet_build(package, system, distribution, architecture, adapter):
     internet.download(package, system, distribution, architecture)
+    raise NotImplementedError("Need to write this")
 
 
 def register(source_path, install_path, system, distribution, architecture):
+    '''Add installation options to all of the Nuke adapter classes.
+
+    Each of the installation options take only one arg, which is the adapter
+    which is used to handle the request. If the request is successful then the
+    function should just complete. If it fails for whatever reason then
+    have the function raise any exception.
+
+    Args:
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
+        system (str):
+            The name of the OS platform. Example: "Linux", "Windows", etc.
+        architecture (str):
+            The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        distribution (str):
+            The name of the type of OS (Example: "CentOS", "windows", etc.)
+
+    '''
     adapters = (
         ('Linux', LinuxAdapter),
         ('Windows', WindowsAdapter),
     )
 
-    for system, adapter in adapters:
+    for system_, adapter in adapters:
         adapter.strategies = []
 
         add_nuke_from_internet_build = functools.partial(
@@ -401,4 +422,4 @@ def register(source_path, install_path, system, distribution, architecture):
         adapter.strategies.append(('link', add_link_build))
         adapter.strategies.append(('internet', add_nuke_from_internet_build))
 
-        chooser.register_build_adapter(adapter, 'nuke_installation', system)
+        chooser.register_build_adapter(adapter, 'nuke_installation', system_)

@@ -2,19 +2,12 @@
 # -*- coding: utf-8 -*-
 
 # IMPORT STANDARD LIBRARIES
-import getpass
 import logging
 import abc
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
-from rez.vendor.version import version as version_
-from rez import package_maker__ as package_maker
-from rez import config
 import six
-
-# IMPORT LOCAL LIBRARIES
-from .. import manager
 
 
 LOGGER = logging.getLogger('rezzurect.nuke_builder')
@@ -29,12 +22,15 @@ class BaseAdapter(object):
     strategies = []
 
     def __init__(self, version, architecture):
-        # '''Create the instance and store the user's architecture.
+        '''Create the instance and store the user's architecture.
 
-        # Args:
-        #     architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        Args:
+            version (str):
+                The specific install of `package`.
+            architecture (str):
+                The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
-        # '''
+        '''
         super(BaseAdapter, self).__init__()
         self.version = version
         self.architecture = architecture
@@ -50,9 +46,6 @@ class BaseAdapter(object):
             install (str):
                 The absolute directory where `source` will be installed into.
 
-        Raises:
-            EnvironmentError: If the executable file could not be found.
-
         Returns:
             str: The absolute path to the executable file which is used for installation.
 
@@ -61,51 +54,44 @@ class BaseAdapter(object):
 
     # TODO : Consider making `definition` into a dict
     @staticmethod
-    def make_package(definition, root=''):
-        if not root:
-            root = config.config.get('local_packages_path')
-
-        if not os.path.isdir(root):
-            os.makedirs(root)
-
-        with package_maker.make_package(definition.name, root) as pkg:
-            manager.mirror('authors', definition, pkg, default=[getpass.getuser()])
-            manager.mirror('commands', definition, pkg)
-            manager.mirror('description', definition, pkg)
-            manager.mirror('help', definition, pkg, default='')
-            manager.mirror('name', definition, pkg)
-            manager.mirror('timestamp', definition, pkg)
-            manager.mirror('tools', definition, pkg)
-            # mirror('uuid', definition, pkg, default=str(uuid.uuid4()))
-            pkg.version = version_.Version(definition.version)
-
-    @staticmethod
     def get_archive_path(root, file_name):
+        '''str: Get the recommended folder for archive (installer) files to be.'''
         return os.path.join(root, 'archive', file_name)
 
     @classmethod
     def get_strategy_order(cls):
+        '''Find the strategy execution order for this adapter.
+
+        If an environment variable matching this adapter's name is found,
+        then that order will be used. If a global strategy order has been defined
+        then that will be used instead. If neither exist, use the order that
+        the strategies were registered with.
+
+        Note:
+            If a global or package environment variable is defined and this class
+            has a registered strategy that is not listed in either, it is ignored
+            and will not execute.
+
+        Returns:
+            list[str]:
+                The names of each strategy in the order that they should be tried.
+
+        '''
         def _split(variable):
             items = []
+
             for item in variable.split(','):
                 item = item.strip()
 
                 if item:
                     items.append(item)
 
-            return item
+            return items
 
         LOGGER.debug('Finding strategy order for "{obj.__name__}".'
                      ''.format(obj=cls))
 
         default_order = [name for name, _ in cls.strategies]
-
-        global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
-
-        if global_order:
-            LOGGER.debug('Global order "{global_order}" was found.'.format(
-                global_order=global_order))
-            return _split(global_order)
 
         package_order = os.getenv('REZZURECT_{name}_STRATEGY_ORDER'
                                   ''.format(name=cls.name.upper()), '')
@@ -115,6 +101,13 @@ class BaseAdapter(object):
                 package_order=package_order))
             return _split(package_order)
 
+        global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
+
+        if global_order:
+            LOGGER.debug('Global order "{global_order}" was found.'.format(
+                global_order=global_order))
+            return _split(global_order)
+
         LOGGER.debug('Default order "{default_order}" will be used.'.format(
             default_order=default_order))
 
@@ -122,6 +115,13 @@ class BaseAdapter(object):
 
     @classmethod
     def get_strategies(cls):
+        '''Get registered build strategies for this class in execution-order.
+
+        Returns:
+            list[str, callable[`rezzurect.adapters.base_builder.BaseAdapter`]]:
+                The found strategies.
+
+        '''
         strategies = {name: strategy for name, strategy in cls.strategies}
         order = cls.get_strategy_order()
         return [(name, strategies[name]) for name in order]
@@ -150,4 +150,5 @@ class BaseAdapter(object):
 
     @abc.abstractmethod
     def get_preinstalled_executables(self):
+        '''str: Get a list of possible pre-installed executable Nuke files.'''
         return set()
