@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A module which loads some pre-defined methods to build Rez packages.'''
+'''A module which loads some "off-the-shelf" functions which build Rez packages.
+
+This module is loaded by `rezzurect.environment`. It's not required for rezzurect
+to work but the adapters that this module initializes must be replaced or
+rezzurect will fail to build / source / run Rez packages correctly.
+
+'''
 
 # IMPORT STANDARD LIBRARIES
-import functools
 import platform
-import os
-
-# IMPORT THIRD-PARTY LIBRARIES
-from rez import config
 
 # IMPORT LOCAL LIBRARIES
 from .adapters.nuke import nuke_builder
@@ -25,31 +26,29 @@ def main(
     distribution='-'.join(platform.dist()),
     architecture=common.get_architecture(),
 ):
-    # '''Load all of the user's defined build methods.
+    '''Load all of the user's defined build methods.
 
-    # The currently supported build methods are:
+    Args:
+        source_path (str):
+            The absolute path to the package definition folder.
+            Example: "$USER/configs/tk-config-default2/rez_packages/nuke/10.5v8".
+        build_path (str):
+            The absolute path to the package definition's build folder.
+            Example: "$USER/configs/tk-config-default2/rez_packages/nuke/10.5v8/build".
+        install_path (str):
+            The absolute path to where the package's contents will be installed to.
+            Example: "$USER/packages/nuke/10.5v8/install"
+        system (`str`, optional):
+            The name of the OS (example: "Linux", "Windows", etc.)
+            If nothing is given, the user's current system is used, instead.
+        distribution (`str`, optional):
+            The name of the type of OS (example: "CentOS", "windows", etc.)
+            If nothing is given, the user's current distribution is used, instead.
+        architecture (`str or int`, optional):
+            The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
+            If nothing is given, the user's current architecture is used, instead.
 
-    #     git-ssh
-    #     local (filesystem)
-
-    # Args:
-    #     source_path (str):
-    #         The absolute path to the package definition folder.
-    #     build_path (str):
-    #         The absolute path to the package definition's build folder.
-    #     install_path (str):
-    #         The absolute path to where the package's contents will be installed to.
-    #     system (`str`, optional):
-    #         The name of the OS (example: "Linux", "Windows", etc.)
-    #         If nothing is given, the user's current system is used, instead.
-    #     distribution (`str`, optional):
-    #         The name of the type of OS (example: "CentOS", "windows", etc.)
-    #         If nothing is given, the user's current distribution is used, instead.
-    #     architecture (`str`, optional):
-    #         The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
-    #         If nothing is given, the user's current architecture is used, instead.
-
-    # '''
+    '''
     known_modules = (
         nuke_builder,
     )

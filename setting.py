@@ -7,7 +7,7 @@
 from .setting_adapters import nuke_adapter
 
 
-def get_package_adapter(package, alias_manager=None):
+def get_setting_adapter(package, alias_manager=None):
     '''Create an adapter which can be used to add aliases to environment info.
 
     Args:
@@ -53,5 +53,5 @@ def add_common_commands(package, version, alias_manager):
         `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     '''
-    adapter = get_package_adapter(package, alias_manager)
+    adapter = get_setting_adapter(package, alias_manager)
     adapter.execute(version)

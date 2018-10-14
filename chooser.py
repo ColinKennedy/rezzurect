@@ -12,13 +12,15 @@ from .adapters.nuke import nuke_setting
 _ADAPTERS = dict()
 
 
-def get_package_adapter(
+def get_build_adapter(
         package,
         version,
         system=platform.system(),
         architecture=platform.architecture(),
     ):
-    '''Create an adapter for the given configuration.
+    '''Create an adapter for the given package configuration.
+
+    This adapter is responsible for building the package.
 
     Args:
         package (str):
@@ -32,7 +34,8 @@ def get_package_adapter(
 
     Raises:
         NotImplementedError:
-            If no adapter could be found for the package/version/system/architecture.
+            If no adapter could be found for the
+            package/version/system/architecture.
 
     Returns:
         `BaseAdapter`: The found adapter.
@@ -55,6 +58,9 @@ def get_package_adapter(
     return adapter(version, system, architecture)
 
 
+# TODO : If aliases turn out to be useless on Windows then delete all
+#        setting-adapter-related code since we won't need it anymore
+#
 def get_setting_adapter(package, version, alias=None):
     '''Create an adapter which can be used to add aliases to environment info.
 
@@ -63,7 +69,7 @@ def get_setting_adapter(package, version, alias=None):
             The name of the package to get aliases of.
         version (str):
             The type of the `package` to get aliases of.
-        alias (`rez.rex.ActionManager.alias[str, str]`):
+        alias (`rez.rex.ActionManager.alias[str, str]`, optional):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
 
@@ -71,7 +77,7 @@ def get_setting_adapter(package, version, alias=None):
         NotImplementedError: If the given `package` has no adapter.
 
     Returns:
-        `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
+        `rezzurect.adapters.common.BaseAdapter`: The found adapter.
 
     '''
     adapters = {
@@ -87,7 +93,7 @@ def get_setting_adapter(package, version, alias=None):
 
 
 def add_common_commands(package, version, env, alias):
-    '''Add common aliases and environment variables for the given package.
+    '''Add aliases and environment variables for the given package.
 
     Args:
         package (str):
@@ -95,14 +101,11 @@ def add_common_commands(package, version, env, alias):
         version (str):
             The version provided by the package.
             It's up to the adapter to parse the version properly.
-        env:
-            The
-        alias (`rez.rex.ActionManager.alias[str, str]`):
+        env (`rez.utils.data_utils.AttrDictWrapper`):
+            The Rez environment which represents `package`.
+        alias (`callable[str, str]`):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
-
-    Returns:
-        `rezzurect.adapters.common.BaseAdapter` or NoneType: The found class.
 
     '''
     adapter = get_setting_adapter(package, version, alias)
@@ -111,7 +114,7 @@ def add_common_commands(package, version, env, alias):
     install_root = env.INSTALL_ROOT.get()
 
     if not os.path.isdir(install_root) or not os.listdir(install_root):
-        package_adapter = get_package_adapter(package, version)
+        package_adapter = get_build_adapter(package, version)
 
         for executable in package_adapter.get_preinstalled_executables():
             if os.path.isfile(executable):
@@ -120,7 +123,19 @@ def add_common_commands(package, version, env, alias):
                 break
 
 
-def register_platform_adapter(adapter, name, system):
+def register_build_adapter(adapter, name, system):
+    '''Add the given class for a platform.
+
+    Args:
+        adapter (`adapters.base_builder`):
+            The adapter to add to our available build adapters.
+        name (str):
+            The name of the Rez package.
+        system (str):
+            The name of the OS which `adapter` represents.
+            Examples: "Darwin", "Linux", "Windows".
+
+    '''
     _ADAPTERS.setdefault(name, dict())
     _ADAPTERS[name].setdefault(system, dict())
 

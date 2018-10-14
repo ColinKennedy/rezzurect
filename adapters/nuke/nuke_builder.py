@@ -6,24 +6,16 @@
 # IMPORT STANDARD LIBRARIES
 import subprocess
 import functools
-import itertools
-import getpass
 import logging
 import tarfile
 import zipfile
-import ftplib
 import stat
-import abc
 import os
-
-# IMPORT THIRD-PARTY LIBRARIES
-from rez.vendor.version import version as version_
-from rez import package_maker__ as package_maker
-from rez import config
 
 # IMPORT LOCAL LIBRARIES
 from ...strategies import internet
 from ...utils import progressbar
+from .. import base_builder
 from ...vendors import six
 from ... import chooser
 from ... import manager
@@ -34,14 +26,7 @@ _DEFAULT_VALUE = object()
 LOGGER = logging.getLogger('rezzurect.nuke_builder')
 
 
-@six.add_metaclass(abc.ABCMeta)
-class BaseAdapter(object):
-
-    '''An adapter for installing the package onto the user's system.'''
-
-    name = ''
-    strategies = []
-
+class BaseNukeAdapter(base_builder.BaseAdapter):
     def __init__(self, version, system, architecture):
         # '''Create the instance and store the user's architecture.
 
@@ -49,10 +34,7 @@ class BaseAdapter(object):
         #     architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
         # '''
-        super(BaseAdapter, self).__init__()
-        self.version = version
-        self.system = system
-        self.architecture = architecture
+        super(BaseNukeAdapter, self).__init__(version, system, architecture)
 
     @staticmethod
     def _get_version_parts(text):
@@ -74,7 +56,6 @@ class BaseAdapter(object):
             cls._install_file_name_template.format(major=major, minor=minor, patch=patch),
         )
 
-    @abc.abstractmethod
     def install_from_local(self, source, install):
         '''Search for a locally-installed Nuke file and install it, if it exists.
 
@@ -101,117 +82,8 @@ class BaseAdapter(object):
 
         return executable
 
-    @classmethod
-    def install_from_ftp(cls, server, source, install):
-        ftp = ftplib.FTP()
 
-        # TODO : Default host / port?
-        host = os.environ['REZZURECT_FTP_HOST']
-        port = os.environ['REZZURECT_FTP_PORT']
-        user = os.environ['REZZURECT_FTP_USER']
-        password = os.environ['REZZURECT_FTP_PASSWORD']
-        ftp.connect(host, port)
-        ftp.login(user, password)
-
-        # TODO : Make this work
-        # TODO : Make progress-bar
-        #        https://stackoverflow.com/questions/11623964/python-ftp-and-progressbar-2-3
-
-        destination = '/tmp/somewhere'
-        ftp.retrbinary(
-            'RETR {filename}'.format(filename='FOO FILENAME'))
-
-    # TODO : Consider making `definition` into a dict
-    @staticmethod
-    def make_package(definition, root=''):
-        if not root:
-            root = config.config.get('local_packages_path')
-
-        if not os.path.isdir(root):
-            os.makedirs(root)
-
-        with package_maker.make_package(definition.name, root) as pkg:
-            manager.mirror('authors', definition, pkg, default=[getpass.getuser()])
-            manager.mirror('commands', definition, pkg)
-            manager.mirror('description', definition, pkg)
-            manager.mirror('help', definition, pkg, default='')
-            manager.mirror('name', definition, pkg)
-            manager.mirror('timestamp', definition, pkg)
-            manager.mirror('tools', definition, pkg)
-            # mirror('uuid', definition, pkg, default=str(uuid.uuid4()))
-            pkg.version = version_.Version(definition.version)
-
-    @classmethod
-    def get_strategy_order(cls):
-        def _split(variable):
-            items = []
-            for item in variable.split(','):
-                item = item.strip()
-
-                if item:
-                    items.append(item)
-
-            return item
-
-        LOGGER.debug('Finding strategy order for "{obj.__name__}".'
-                     ''.format(obj=cls))
-
-        default_order = [name for name, _ in cls.strategies]
-
-        global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
-
-        if global_order:
-            LOGGER.debug('Global order "{global_order}" was found.'.format(
-                global_order=global_order))
-            return _split(global_order)
-
-        package_order = os.getenv('REZZURECT_{name}_STRATEGY_ORDER'
-                                  ''.format(name=cls.name.upper()), '')
-
-        if package_order:
-            LOGGER.debug('Package order "{package_order}" was found.'.format(
-                package_order=package_order))
-            return _split(package_order)
-
-        LOGGER.debug('Default order "{default_order}" will be used.'.format(
-            default_order=default_order))
-
-        return default_order
-
-    @classmethod
-    def get_strategies(cls):
-        strategies = {name: strategy for name, strategy in cls.strategies}
-        order = cls.get_strategy_order()
-        return [(name, strategies[name]) for name in order]
-
-    def make_install(self):
-        '''Try different build methods until something works.
-
-        Raises:
-            RuntimeError: If all found build methods fail.
-
-        '''
-        strategies = self.get_strategies()
-
-        for name, choice in strategies:
-            try:
-                choice(self)
-            except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('strategy "{name}" did not succeed.'.format(name=name))
-            else:
-                LOGGER.info('strategy "{name}" succeeded.'.format(name=name))
-                return
-
-        raise RuntimeError(
-            'No strategy to install the package suceeded. The strategies were, '
-            '"{strategies}".'.format(strategies=[name for name, _ in strategies]))
-
-    @abc.abstractmethod
-    def get_preinstalled_executables(self):
-        return set()
-
-
-class LinuxAdapter(BaseAdapter):
+class LinuxAdapter(BaseNukeAdapter):
 
     '''An adapter for installing Nuke onto a Linux machine.'''
 
@@ -311,7 +183,7 @@ class LinuxAdapter(BaseAdapter):
                     for path in options))
 
 
-class WindowsAdapter(BaseAdapter):
+class WindowsAdapter(BaseNukeAdapter):
 
     '''An adapter for installing Nuke onto a Windows machine.'''
 
@@ -383,7 +255,7 @@ def add_local_filesystem_build(source_path, install_path, adapter):
     # '''Search the user's files and build the Rez package.
 
     # Args:
-    #     adapter (`rezzurect.adapters.common.BaseAdapter`):
+    #     adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
     #         The object which is used to "install" the files.
     #     source_path (str):
     #         The absolute path to where the Rez package is located, on-disk.
@@ -401,7 +273,7 @@ def add_link_build(adapter):
     '''Add the command which lets the user link Rez to an existing install.
 
     Args:
-        adapter (`rezzurect.adapters.common.BaseAdapter`):
+        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
             The object which is used to search for existing installs.
 
     Raises:
@@ -416,26 +288,6 @@ def add_link_build(adapter):
 
     raise RuntimeError('No expected binary file could be found. '
                        'Checked "{paths}".'.format(paths=', '.join(sorted(paths))))
-
-
-# def add_ftp_filesystem_build(adapter, source_path, install_path):
-#     '''Download the files from FTP and the Rez package if needed.
-
-#     Args:
-#         adapter (`rezzurect.adapters.common.BaseAdapter`):
-#             The object which is used to "install" the files from FTP.
-#         source_path (str):
-#             The absolute path to where the Rez package is located, on-disk.
-#         install_path (str):
-#             The absolute path to where the package will be installed into.
-
-#     '''
-    # if not os.path.isdir(install_path):
-    #     os.makedirs(install_path)
-
-    # server = os.environ['REZZURECT_FTP_SERVER']
-
-    # adapter.install_from_ftp(server, source_path, install_path)
 
 
 def add_from_internet_build(package, system, distribution, architecture, adapter):
@@ -461,4 +313,4 @@ def register(source_path, install_path, system, distribution, architecture):
         adapter.strategies.append(('link', add_link_build))
         adapter.strategies.append(('internet', add_nuke_from_internet_build))
 
-        chooser.register_platform_adapter(adapter, 'nuke_installation', system)
+        chooser.register_build_adapter(adapter, 'nuke_installation', system)
