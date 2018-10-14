@@ -28,7 +28,7 @@ class BaseAdapter(object):
     name = ''
     strategies = []
 
-    def __init__(self, version, system, architecture):
+    def __init__(self, version, architecture):
         # '''Create the instance and store the user's architecture.
 
         # Args:
@@ -37,7 +37,6 @@ class BaseAdapter(object):
         # '''
         super(BaseAdapter, self).__init__()
         self.version = version
-        self.system = system
         self.architecture = architecture
 
     @abc.abstractmethod
@@ -79,6 +78,10 @@ class BaseAdapter(object):
             manager.mirror('tools', definition, pkg)
             # mirror('uuid', definition, pkg, default=str(uuid.uuid4()))
             pkg.version = version_.Version(definition.version)
+
+    @staticmethod
+    def get_archive_path(root, file_name):
+        return os.path.join(root, 'archive', file_name)
 
     @classmethod
     def get_strategy_order(cls):

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The module which is used to add and retrieve build & setting adapters.'''
+
 # IMPORT STANDARD LIBRARIES
 import platform
 import os
@@ -17,7 +19,7 @@ def get_build_adapter(
         version,
         system=platform.system(),
         architecture=platform.architecture(),
-    ):
+):
     '''Create an adapter for the given package configuration.
 
     This adapter is responsible for building the package.
@@ -27,9 +29,9 @@ def get_build_adapter(
             The name of the Rez package to install.
         version (str):
             The specific install of `package`.
-        system (`str`, optional):
+        system (str, optional):
             The name of the OS platform. Example: "Linux", "Windows", etc.
-        architecture (`str`, optional):
+        architecture (str, optional):
             The bits of the `system`. Example: "x86_64", "AMD64", etc.
 
     Raises:
@@ -55,7 +57,7 @@ def get_build_adapter(
             'System "{system}" is not supported. Options were, "{keys}"'.format(
                 system=system, keys=list(group)))
 
-    return adapter(version, system, architecture)
+    return adapter(version, architecture)
 
 
 # TODO : If aliases turn out to be useless on Windows then delete all
@@ -133,7 +135,7 @@ def register_build_adapter(adapter, name, system):
             The name of the Rez package.
         system (str):
             The name of the OS which `adapter` represents.
-            Examples: "Darwin", "Linux", "Windows".
+            Example: "Darwin", "Linux", "Windows".
 
     '''
     _ADAPTERS.setdefault(name, dict())
