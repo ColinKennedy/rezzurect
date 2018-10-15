@@ -1,3 +1,8 @@
+This is a WIP repository and is still in active development. Check
+out its parent repository [Respawn](https://github.com/ColinKennedy/tk-config-default2-respawn)
+for more details.
+
+
 # Logging
 The central logger that rezzurect uses is located in utils/logger.py. 
 `logger.init()` is run early on in the installation process and sets up all of
