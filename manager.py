@@ -5,7 +5,6 @@
 
 # IMPORT STANDARD LIBRARIES
 from distutils import dir_util
-import subprocess
 import functools
 import getpass
 import glob
@@ -18,6 +17,9 @@ from rez import package_maker__ as package_maker
 from rez import resolved_context
 from rez import exceptions
 import rezzurect
+
+# IMPORT LOCAL LIBRARIES
+from .utils import rez_build
 
 
 _DEFAULT_VALUE = object()
@@ -174,34 +176,6 @@ def make_package(definition, build_path):
     return pkg
 
 
-def build_package(root):
-    '''Install a Rez package definition.
-
-    Args:
-        root (str):
-            The absolute path to a directory which contains a package.py and
-            some build instructions (cmake, bez, etc).
-
-    Returns:
-        str: An error messages that resulted from our command, if any.
-
-    '''
-    # TODO : IMPORTANT: Change this into a Python API command!
-    #        This command requires rez to be installed on the user's system
-    #        which obviously is not an assumption that we are allowed to make.
-    #        This subprocess.Popen command is a TEMPORARY hack just to get
-    #        something working.
-    #
-    commands = [
-        'cd "{root}" && rez-build --install'.format(root=root),
-    ]
-
-    process = subprocess.Popen(commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    (_, stderr) = process.communicate()
-
-    return stderr
-
-
 def build_package_recursively(root, package, version='', build_path=''):
     '''Build a package by building its required packages recursively.
 
@@ -227,16 +201,16 @@ def build_package_recursively(root, package, version='', build_path=''):
     requirements = pkg.get_package().requires
 
     if not requirements:
-        stderr = build_package(os.path.dirname(definition.__file__))
-
-        if not stderr:
-            return
-
-        # TODO : Consider deleting the contents of `os.path.dirname(definition.__file__)`
-        #        before erroring out, here
-        #
-        raise RuntimeError('Definition "{definition}" failed to build. Stderr "{stderr}"'
-                           ''.format(definition=definition.__file__, stderr=stderr))
+        try:
+            rez_build.build(os.path.dirname(definition.__file__))
+        except exceptions.BuildContextResolveError:
+            # TODO : Consider deleting the contents of
+            #        `os.path.dirname(definition.__file__)`
+            #        before erroring out, here
+            #
+            raise RuntimeError(
+                'Definition "{definition}" failed to build. Stderr "{stderr}"'.format(
+                    definition=definition.__file__, stderr=stderr))
 
     for requirement in requirements:
         try:
