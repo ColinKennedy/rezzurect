@@ -63,7 +63,7 @@ def get_build_adapter(
 # TODO : If aliases turn out to be useless on Windows then delete all
 #        setting-adapter-related code since we won't need it anymore
 #
-def get_setting_adapter(package, version, alias=None):
+def get_setting_adapter(package, version, system, alias=None):
     '''Create an adapter which can be used to add aliases to environment info.
 
     Args:
@@ -71,6 +71,9 @@ def get_setting_adapter(package, version, alias=None):
             The name of the package to get aliases of.
         version (str):
             The type of the `package` to get aliases of.
+        system (str):
+            The name of the OS which `adapter` represents.
+            Example: "Darwin", "Linux", "Windows".
         alias (callable[str, str], optional):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
@@ -83,11 +86,12 @@ def get_setting_adapter(package, version, alias=None):
 
     '''
     adapters = {
-        'nuke': nuke_setting.NukeAdapter,
+        ('nuke', 'Linux'): nuke_setting.LinuxNukeAdapter,
+        ('nuke', 'Windows'): nuke_setting.WindowsNukeAdapter,
     }
 
     try:
-        adapter = adapters[package]
+        adapter = adapters[(package, system)]
     except KeyError:
         raise NotImplementedError('Package "{package}" is not supported.'.format(package=package))
 
@@ -110,15 +114,13 @@ def add_common_commands(package, version, env, alias):
             This handle is used to add aliases to the final package.
 
     '''
-    adapter = get_setting_adapter(package, version, alias)
+    adapter = get_setting_adapter(package, version, platform.system(), alias)
     adapter.execute()
 
     install_root = env.INSTALL_ROOT.get()
 
     if not os.path.isdir(install_root) or not os.listdir(install_root):
-        package_adapter = get_build_adapter(package, version)
-
-        for executable in package_adapter.get_preinstalled_executables():
+        for executable in adapter.get_preinstalled_executables():
             if os.path.isfile(executable):
                 # Found a fallback system-wide install
                 env.PATH.append(os.path.dirname(executable))

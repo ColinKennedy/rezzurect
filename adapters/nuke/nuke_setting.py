@@ -8,7 +8,7 @@ from .. import common_setting
 from . import helper
 
 
-class NukeAdapter(common_setting.BaseAdapter):
+class _CommonAdapter(common_setting.BaseAdapter):
 
     '''An adapter which is used to set up common settings / aliases for Nuke.'''
 
@@ -26,7 +26,7 @@ class NukeAdapter(common_setting.BaseAdapter):
                 Default is True.
 
         '''
-        super(NukeAdapter, self).__init__(version, alias)
+        super(_CommonAdapter, self).__init__(version, alias)
 
     def get_executable_command(self):
         '''str: The command that is run as the "main" alias.'''
@@ -44,3 +44,17 @@ class NukeAdapter(common_setting.BaseAdapter):
         # The Nuke command on linux is "Nuke11.2". Non-commercial is "Nuke11.2 -nc"
         version = '.'.join([match.group('major'), match.group('minor')])
         return 'Nuke{version} -nc'.format(version=version)
+
+
+class LinuxNukeAdapter(_CommonAdapter, helper.LinuxAdapterMixin):
+
+    '''An adapter which is used to set up common settings / aliases for Nuke.'''
+
+    pass
+
+
+class WindowsNukeAdapter(_CommonAdapter, helper.WindowsAdapterMixin):
+
+    '''An adapter which is used to set up common settings / aliases for Nuke.'''
+
+    pass

@@ -45,7 +45,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
     @classmethod
     def get_archive_path_from_version(cls, source, version):
         try:
-            major, minor, patch = cls._get_version_parts(version)
+            major, minor, patch = helper.get_version_parts(version)
         except TypeError:
             major, minor, patch = version
 
@@ -54,16 +54,6 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
         )
 
         return cls.get_archive_path(source, file_name)
-
-    @staticmethod
-    def _get_version_parts(text):
-        '''tuple[str, str, str]: Find the major, minor, and patch data of `text`.'''
-        match = helper.VERSION_PARSER.match(text)
-
-        if not match:
-            return ('', '', '')
-
-        return (match.group('major'), match.group('minor'), match.group('patch'))
 
     @classmethod
     def get_install_file(cls, root, version):
@@ -81,7 +71,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
             str: The absolute path to the executable file of the given `version`.
 
         '''
-        major, minor, patch = cls._get_version_parts(version)
+        major, minor, patch = helper.get_version_parts(version)
 
         return cls.get_archive_path(
             root,
@@ -115,7 +105,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
         return executable
 
 
-class LinuxAdapter(BaseNukeAdapter):
+class LinuxAdapter(BaseNukeAdapter, helper.LinuxAdapterMixin):
 
     '''An adapter for installing Nuke onto a Linux machine.'''
 
@@ -164,7 +154,7 @@ class LinuxAdapter(BaseNukeAdapter):
             EnvironmentError: If the Zip file failed to extract Nuke into `install`.
 
         '''
-        major, minor, patch = self._get_version_parts(self.version)
+        major, minor, patch = helper.get_version_parts(self.version)
 
         try:
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
@@ -192,41 +182,8 @@ class LinuxAdapter(BaseNukeAdapter):
         executable_stats = os.stat(executable)
         os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
 
-    def get_preinstalled_executables(self):
-        '''Get a list of possible pre-installed executable Nuke files.
 
-        Raises:
-            RuntimeError:
-                If we can't get version information from the stored version then
-                this function will fail. Normally though, assuming this adapter
-                was built correctly, this shouldn't occur.
-
-        Returns:
-            str: The absolute path to a Nuke executable.
-
-        '''
-        major, minor, _ = self._get_version_parts(self.version)
-
-        if not major:
-            raise RuntimeError(
-                'Version "{obj.version}" has no major component. This should not happen.'
-                ''.format(obj=self))
-
-        if not minor:
-            raise RuntimeError(
-                'Version "{obj.version}" has no minor component. This should not happen.'
-                ''.format(obj=self))
-
-        options = [
-            '/usr/local/Nuke{obj.version}/Nuke{major}.{minor}',
-            os.path.expanduser('~/Nuke{obj.version}/Nuke{major}.{minor}'),
-        ]
-
-        return set((path.format(obj=self, major=major, minor=minor)
-                    for path in options))
-
-
-class WindowsAdapter(BaseNukeAdapter):
+class WindowsAdapter(BaseNukeAdapter, helper.WindowsAdapterMixin):
 
     '''An adapter for installing Nuke onto a Windows machine.'''
 
@@ -275,39 +232,6 @@ class WindowsAdapter(BaseNukeAdapter):
         if stderr:
             raise RuntimeError('The local install failed with this message "{stderr}".'
                                ''.format(stderr=stderr))
-
-    def get_preinstalled_executables(self):
-        '''Get a list of possible pre-installed executable Nuke files.
-
-        Raises:
-            RuntimeError:
-                If we can't get version information from the stored version then
-                this function will fail. Normally though, assuming this adapter
-                was built correctly, this shouldn't occur.
-
-        Returns:
-            str: The absolute path to a Nuke executable.
-
-        '''
-        major, minor, _ = self._get_version_parts(self.version)
-
-        if not major:
-            raise RuntimeError(
-                'Version "{obj.version}" has no major component. This should not happen.'
-                ''.format(obj=self))
-
-        if not minor:
-            raise RuntimeError(
-                'Version "{obj.version}" has no minor component. This should not happen.'
-                ''.format(obj=self))
-
-        return set([
-            r'C:\Program Files\Nuke{obj.version}\Nuke{major}.{minor}.exe'.format(
-                obj=self,
-                major=major,
-                minor=minor,
-            ),
-        ])
 
 
 def add_local_filesystem_build(source_path, install_path, adapter):

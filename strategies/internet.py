@@ -35,7 +35,7 @@ def _get_url(package, version, system, distribution, architecture):
         ('nuke', '11.2v3', 'Linux', 64):
             'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
         ('nuke', '10.5v8', 'Linux', 64):
-            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
+            'https://www.foundry.com/products/download_product?file=Nuke10.5v8-linux-x86-release-64.tgz',
     }
 
     options = [
