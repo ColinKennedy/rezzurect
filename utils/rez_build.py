@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A module for rez-specific build instructions.'''
+
 # IMPORT STANDARD LIBRARIES
 import argparse
 
@@ -13,6 +15,22 @@ from rez import packages_
 
 
 def build(path):
+    '''Build the given Rez package directory into a Rez package.
+
+    This command is basically a copy/paste of
+    the `rez.cli.build.command` function and, essentially is the same as
+    running
+
+    ```bash
+    cd path
+    rez-build --install
+    ```
+
+    Args:
+        path (str): The path to a package definition folder (which must contain
+                    a package.py file).
+
+    '''
     package = packages_.get_developer_package(path)
 
     # TODO : Consider supporting variants
