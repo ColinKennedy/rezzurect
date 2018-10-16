@@ -44,6 +44,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
 
     @classmethod
     def get_archive_path_from_version(cls, source, version):
+        '''str: Get the recommended folder for archive (installer) files to be.'''
         try:
             major, minor, patch = cls._get_version_parts(version)
         except TypeError:
@@ -367,6 +368,9 @@ def add_from_internet_build(package, system, distribution, architecture, source_
             The absolute path to where the package will be installed into.
         adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
             The object which is used to "install" the files.
+
+    Raises:
+        RuntimeError: If the download failed to install into `destination`.
 
     '''
     destination = adapter.get_archive_path_from_version(source_path, adapter.version)
