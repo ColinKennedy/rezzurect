@@ -21,7 +21,7 @@ from . import helper
 
 
 _DEFAULT_VALUE = object()
-LOGGER = logging.getLogger('rezzurect.nuke_builder')
+_LOGGER = logging.getLogger('rezzurect.nuke_builder')
 
 
 class BaseNukeAdapter(base_builder.BaseAdapter):
@@ -41,6 +41,19 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
     '''
 
     _install_file_name_template = ''
+
+    @classmethod
+    def get_archive_path_from_version(cls, source, version):
+        try:
+            major, minor, patch = cls._get_version_parts(version)
+        except TypeError:
+            major, minor, patch = version
+
+        file_name = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'.format(
+            major=major, minor=minor, patch=patch,
+        )
+
+        return cls.get_archive_path(source, file_name)
 
     @staticmethod
     def _get_version_parts(text):
@@ -122,25 +135,19 @@ class LinuxAdapter(BaseNukeAdapter):
             EnvironmentError: If no archive file could be found.
 
         '''
-        (major, minor, patch) = version
-
-        file_name = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'.format(
-            major=major, minor=minor, patch=patch,
-        )
-
-        path = cls.get_archive_path(source, file_name)
+        path = cls.get_archive_path_from_version(source, version)
 
         if not os.path.isfile(path):
             raise EnvironmentError('Tar file "{path}" does not exist.'
                                    ''.format(path=path))
 
-        LOGGER.debug('Extracting tar file "%s".', path)
+        _LOGGER.debug('Extracting tar file "%s".', path)
 
-        with tarfile.open(fileobj=progressbar.ProgressFileObject(path, logger=LOGGER.trace)) as tar:
+        with tarfile.open(fileobj=progressbar.TarProgressFile(path, logger=_LOGGER.trace)) as tar:
             try:
                 tar.extractall(path=os.path.dirname(path))
             except Exception:
-                LOGGER.exception('Tar file "%s" failed to extract.', path)
+                _LOGGER.exception('Tar file "%s" failed to extract.', path)
                 raise
 
     def install_from_local(self, source, install):
@@ -165,13 +172,13 @@ class LinuxAdapter(BaseNukeAdapter):
             self._extract_tar(source, (major, minor, patch))
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
 
-        LOGGER.debug('Unzipping "%s".', zip_file_path)
+        _LOGGER.debug('Unzipping "%s".', zip_file_path)
 
         with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
             try:
                 zip_file.extractall(install)
             except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
+                _LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
                 raise
 
         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
@@ -198,7 +205,7 @@ class LinuxAdapter(BaseNukeAdapter):
             str: The absolute path to a Nuke executable.
 
         '''
-        major, minor = self._get_version_parts(self.version)
+        major, minor, _ = self._get_version_parts(self.version)
 
         if not major:
             raise RuntimeError(
@@ -342,7 +349,7 @@ def add_link_build(adapter):
                        'Checked "{paths}".'.format(paths=', '.join(sorted(paths))))
 
 
-def add_from_internet_build(package, system, distribution, architecture, adapter):
+def add_from_internet_build(package, system, distribution, architecture, source_path, install_path, adapter):
     '''Download the installer for `package` and then install it.
 
     Args:
@@ -354,12 +361,38 @@ def add_from_internet_build(package, system, distribution, architecture, adapter
             The name of the type of OS (Example: "CentOS", "windows", etc.)
         architecture (str):
             The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
         adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
             The object which is used to "install" the files.
 
     '''
-    internet.download(package, adapter.version, system, distribution, architecture)
-    raise NotImplementedError("Need to write this")
+    destination = adapter.get_archive_path_from_version(source_path, adapter.version)
+
+    internet.download(
+        package,
+        adapter.version,
+        system,
+        distribution,
+        architecture,
+        destination,
+    )
+
+    if not os.path.isfile(destination):
+        raise RuntimeError(
+            'Package/Version "{package}/{version}" could not be downloaded to path, '
+            '"{destination}".'.format(package=package, version=version, destination=destination))
+
+    _LOGGER.info(
+        'Downloaded package/version "%s/%s" to path, "%s".',
+        package,
+        adapter.version,
+        destination,
+    )
+
+    add_local_filesystem_build(source_path, install_path, adapter)
 
 
 def register(source_path, install_path, system, distribution, architecture):
@@ -393,7 +426,7 @@ def register(source_path, install_path, system, distribution, architecture):
 
         add_nuke_from_internet_build = functools.partial(
             add_from_internet_build,
-            'nuke', system, distribution, architecture)
+            'nuke', system, distribution, architecture, source_path, install_path)
         add_nuke_local_filesystem_build = functools.partial(
             add_local_filesystem_build, source_path, install_path)
 

@@ -3,8 +3,18 @@
 
 '''A set of functions for downloading executable files over the Internet.'''
 
+# IMPORT STANDARD LIBRARIES
+import logging
+
+# IMPORT THIRD-PARTY LIBRARIES
+from six.moves import urllib
+
 # IMPORT LOCAL LIBRARIES
+from ..utils import progressbar
 from ..utils import common
+
+
+_LOGGER = logging.getLogger('rezzurect.internet')
 
 
 def _get_url(package, version, system, distribution, architecture):
@@ -22,7 +32,9 @@ def _get_url(package, version, system, distribution, architecture):
     '''
     # TODO : Move this to a config file somewhere else
     references = {
-        ('nuke', '11.2v3', 'Linux', 'x86_64'):
+        ('nuke', '11.2v3', 'Linux', 64):
+            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
+        ('nuke', '10.5v8', 'Linux', 64):
             'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
     }
 
@@ -33,6 +45,8 @@ def _get_url(package, version, system, distribution, architecture):
     ]
 
     for option in options:
+        _LOGGER.trace('Checking for URL using "%s".', option)
+
         try:
             url = references[option]
         except KeyError:
@@ -44,13 +58,23 @@ def _get_url(package, version, system, distribution, architecture):
     return ''
 
 
-def _install_from_url(url):
-    '''Download the contents of the URL.'''
-    # TODO : Write this
-    raise NotImplementedError('Need to write this.' + url)
+def _install_from_url(url, destination):
+    '''Download the contents of the URL to some location on-disk.
+
+    Args:
+        url (str): The Internet address to download from.
+        destination (str): The location where the package's files should download to.
 
 
-def download(package, version, system, distribution, architecture):
+    '''
+    urllib.request.urlretrieve(
+        url,
+        destination,
+        reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
+    )
+
+
+def download(package, version, system, distribution, architecture, destination):
     '''Download a package from online, using http/https.
 
     Args:
@@ -59,6 +83,7 @@ def download(package, version, system, distribution, architecture):
         system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
         architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
         distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
+        destination (str): The location where the package's files should download to.
 
     Raises:
         RuntimeError: If no URL for the given settings could be found.
@@ -70,4 +95,4 @@ def download(package, version, system, distribution, architecture):
         raise RuntimeError('No URL could be found for "{data}".'.format(
             data=(package, system, distribution, architecture)))
 
-    _install_from_url(url)
+    _install_from_url(url, destination)
