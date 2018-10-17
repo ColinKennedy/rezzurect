@@ -10,6 +10,7 @@ all other loggers will inherit from.
 
 # IMPORT STANDARD LIBRARIES
 from logging import handlers
+import tempfile
 import logging
 import os
 
@@ -42,7 +43,8 @@ def init():
     '''Create a new log level called TRACE and create the parent rezzurect logger.'''
     attach_trace_level()
 
-    log_base_location = os.getenv('REZZURECT_LOG_PATH', '/tmp/.rezzurect')
+    log_base_location = os.getenv(
+        'REZZURECT_LOG_PATH', os.path.join(tempfile.gettempdir(), '.rezzurect'))
 
     if not os.path.isdir(log_base_location):
         os.makedirs(log_base_location)

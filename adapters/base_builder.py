@@ -54,11 +54,15 @@ class BaseAdapter(object):
         '''
         return ''
 
-    # TODO : Consider making `definition` into a dict
     @staticmethod
-    def get_archive_path(root, file_name):
+    def get_archive_folder(root):
         '''str: Get the recommended folder for archive (installer) files to be.'''
-        return os.path.join(root, 'archive', file_name)
+        return os.path.join(root, 'archive')
+
+    @classmethod
+    def get_archive_path(cls, root, file_name):
+        '''str: Get the recommended folder for archive (installer) files to be.'''
+        return os.path.join(cls.get_archive_folder(root), file_name)
 
     @classmethod
     def get_strategy_order(cls):

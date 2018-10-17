@@ -16,7 +16,7 @@ from .utils import common
 
 
 _logger.init()
-LOGGER = logging.getLogger('rezzurect.environment')
+_LOGGER = logging.getLogger('rezzurect.environment')
 
 
 def _get_rez_environment_details():
@@ -103,7 +103,7 @@ def _get_handlers(objects=None):
         try:
             module = _resolve_object(path)
         except ImportError:
-            LOGGER.error('Path "%s" is not a valid Python module import path.', path)
+            _LOGGER.exception('Path "%s" is not a valid Python module import path.', path)
             continue
 
         handlers.append(module.main)

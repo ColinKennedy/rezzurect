@@ -40,7 +40,27 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
 
     '''
 
+    _install_archive_name_template = ''
     _install_file_name_template = ''
+
+    @staticmethod
+    def _extract_zip(zip_file_path, destination):
+        '''Extract a ZIP file to some file location.
+
+        Args:
+            zip_file_path (str):
+                The absolute path to some ZIP file.
+            destination (str):
+                An absolute path to a directory where `zip_file_path`
+                will be extracted to.
+
+        '''
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+            try:
+                zip_file.extractall(destination)
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
+                raise
 
     @classmethod
     def get_archive_path_from_version(cls, source, version):
@@ -50,7 +70,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
         except TypeError:
             major, minor, patch = version
 
-        file_name = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'.format(
+        file_name = cls._install_archive_name_template.format(
             major=major, minor=minor, patch=patch,
         )
 
@@ -111,6 +131,7 @@ class LinuxAdapter(BaseNukeAdapter):
     '''An adapter for installing Nuke onto a Linux machine.'''
 
     name = 'nuke'
+    _install_archive_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer'
 
     @classmethod
@@ -180,12 +201,7 @@ class LinuxAdapter(BaseNukeAdapter):
 
         _LOGGER.debug('Unzipping "%s".', zip_file_path)
 
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
-            try:
-                zip_file.extractall(install)
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
-                raise
+        self._extract_zip(zip_file_path, install)
 
         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
         executable = os.path.join(install, executable)
@@ -204,6 +220,7 @@ class WindowsAdapter(BaseNukeAdapter):
     '''An adapter for installing Nuke onto a Windows machine.'''
 
     name = 'nuke'
+    _install_archive_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.zip'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.exe'
 
     @staticmethod
@@ -224,6 +241,33 @@ class WindowsAdapter(BaseNukeAdapter):
         #
         return '{executable} /dir="{root}" /silent'.format(
             executable=executable, root=root)
+
+    @classmethod
+    def _extract_zip_from_version(cls, source, version, install):
+        '''Find the ZIP file for Nuke, based on the given version, and extract it.
+
+        Args:
+            source (str):
+                The root folder which contains the ZIP file.
+            version (str):
+                Some Nuke version to get the ZIP file of.
+            install (str):
+                The directory location to a directory where the ZIP file
+                will be extracted to.
+
+        Raises:
+            EnvironmentError: If the found ZIP file for `version` does not exist.
+
+        '''
+        path = cls.get_archive_path_from_version(source, version)
+
+        if not os.path.isfile(path):
+            raise EnvironmentError('Zip file "{path}" does not exist.'
+                                   ''.format(path=path))
+
+        _LOGGER.debug('Extracting zip file "%s" using version, "%s"', path, str(version))
+
+        cls._extract_zip(path, install)
 
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.
@@ -254,7 +298,12 @@ class WindowsAdapter(BaseNukeAdapter):
             RuntimeError: If the installation failed for some reason.
 
         '''
-        executable = super(WindowsAdapter, self).install_from_local(source, install)
+        try:
+            executable = super(WindowsAdapter, self).install_from_local(source, install)
+        except EnvironmentError:
+            self._extract_zip_from_version(source, self.version, install)
+            executable = super(WindowsAdapter, self).install_from_local(source, install)
+
         command = self._get_base_command(executable, install)
 
         _, stderr = subprocess.Popen(
@@ -327,9 +376,9 @@ def add_from_internet_build(package, system, distribution, architecture, source_
         RuntimeError: If the download failed to install into `destination`.
 
     '''
-    destination = adapter.get_archive_path_from_version(source_path, adapter.version)
+    destination = adapter.get_archive_folder(source_path)
 
-    internet.download(
+    destination = internet.download(
         package,
         adapter.version,
         system,
