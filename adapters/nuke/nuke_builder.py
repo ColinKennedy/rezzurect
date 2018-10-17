@@ -243,7 +243,7 @@ class WindowsAdapter(BaseNukeAdapter):
             executable=executable, root=root)
 
     @classmethod
-    def _extract_zip_from_version(cls, source, version, install):
+    def _extract_zip_from_version(cls, source, version):
         '''Find the ZIP file for Nuke, based on the given version, and extract it.
 
         Args:
@@ -251,9 +251,6 @@ class WindowsAdapter(BaseNukeAdapter):
                 The root folder which contains the ZIP file.
             version (str):
                 Some Nuke version to get the ZIP file of.
-            install (str):
-                The directory location to a directory where the ZIP file
-                will be extracted to.
 
         Raises:
             EnvironmentError: If the found ZIP file for `version` does not exist.
@@ -267,7 +264,7 @@ class WindowsAdapter(BaseNukeAdapter):
 
         _LOGGER.debug('Extracting zip file "%s" using version, "%s"', path, str(version))
 
-        cls._extract_zip(path, install)
+        cls._extract_zip(path, os.path.dirname(path))
 
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.
@@ -301,7 +298,7 @@ class WindowsAdapter(BaseNukeAdapter):
         try:
             executable = super(WindowsAdapter, self).install_from_local(source, install)
         except EnvironmentError:
-            self._extract_zip_from_version(source, self.version, install)
+            self._extract_zip_from_version(source, self.version)
             executable = super(WindowsAdapter, self).install_from_local(source, install)
 
         command = self._get_base_command(executable, install)
