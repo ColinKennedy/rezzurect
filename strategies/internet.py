@@ -49,7 +49,7 @@ def _get_url(package, version, system, distribution, architecture):
     try:
         url = references[option]
     except KeyError:
-        continue
+        return ''
 
     if common.is_url_reachable(url):
         return url
