@@ -106,7 +106,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
         return executable
 
 
-class LinuxAdapter(BaseNukeAdapter, helper.LinuxAdapterMixin):
+class LinuxAdapter(BaseNukeAdapter):
 
     '''An adapter for installing Nuke onto a Linux machine.'''
 
@@ -140,6 +140,21 @@ class LinuxAdapter(BaseNukeAdapter, helper.LinuxAdapterMixin):
             except Exception:
                 _LOGGER.exception('Tar file "%s" failed to extract.', path)
                 raise
+
+    def get_preinstalled_executables(self):
+        '''Get a list of possible pre-installed executable Nuke files.
+
+        Raises:
+            RuntimeError:
+                If we can't get version information from the stored version then
+                this function will fail. Normally though, assuming this adapter
+                was built correctly, this shouldn't occur.
+
+        Returns:
+            str: The absolute path to a Nuke executable.
+
+        '''
+        return helper.get_preinstalled_linux_executables(self.version)
 
     def install_from_local(self, source, install):
         '''Unzip the Nuke file to the given install folder.
@@ -184,7 +199,7 @@ class LinuxAdapter(BaseNukeAdapter, helper.LinuxAdapterMixin):
         os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
 
 
-class WindowsAdapter(BaseNukeAdapter, helper.WindowsAdapterMixin):
+class WindowsAdapter(BaseNukeAdapter):
 
     '''An adapter for installing Nuke onto a Windows machine.'''
 
@@ -209,6 +224,21 @@ class WindowsAdapter(BaseNukeAdapter, helper.WindowsAdapterMixin):
         #
         return '{executable} /dir="{root}" /silent'.format(
             executable=executable, root=root)
+
+    def get_preinstalled_executables(self):
+        '''Get a list of possible pre-installed executable Nuke files.
+
+        Raises:
+            RuntimeError:
+                If we can't get version information from the stored version then
+                this function will fail. Normally though, assuming this adapter
+                was built correctly, this shouldn't occur.
+
+        Returns:
+            str: The absolute path to a Nuke executable.
+
+        '''
+        return helper.get_preinstalled_windows_executables(self.version)
 
     def install_from_local(self, source, install):
         '''Search for a local Nuke install-executable and run it, if it exists.
@@ -310,8 +340,8 @@ def add_from_internet_build(package, system, distribution, architecture, source_
 
     if not os.path.isfile(destination):
         raise RuntimeError(
-            'Package/Version "{package}/{version}" could not be downloaded to path, '
-            '"{destination}".'.format(package=package, version=version, destination=destination))
+            'Package/Version "{package}/{adapter.version}" could not be downloaded to path, '
+            '"{destination}".'.format(package=package, adapter=adapter, destination=destination))
 
     _LOGGER.info(
         'Downloaded package/version "%s/%s" to path, "%s".',
