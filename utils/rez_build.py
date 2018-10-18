@@ -33,22 +33,11 @@ def build(path):
     '''
     package = packages_.get_developer_package(path)
 
-    # TODO : Consider supporting variants
-    opts = argparse.Namespace(
-        prefix=None,
-        process='local',
-        clean=False,
-        scripts=False,
-        install=True,
-        variants=None,
-    )
-
     build_system_ = build_system.create_build_system(
         path,
         package=package,
         buildsys_type=None,
-        opts=opts,
-        write_build_scripts=opts.scripts,
+        write_build_scripts=False,
         verbose=True,
         build_args=[],
         child_build_args=[],
@@ -56,7 +45,7 @@ def build(path):
 
     # create and execute build process
     builder = build_process_.create_build_process(
-        opts.process,
+        'local',
         path,
         package=package,
         build_system=build_system_,
@@ -65,19 +54,18 @@ def build(path):
 
     try:
         builder.build(
-            install_path=opts.prefix,
-            clean=opts.clean,
-            install=opts.install,
-            variants=opts.variants,
+            install_path=None,
+            clean=False,
+            install=True,
+            variants=None,
         )
     except exceptions.BuildContextResolveError as err:
         LOGGER.exception('Path "%s" failed to build.', path)
 
-        if opts.fail_graph:
-            if err.context.graph:
-                graph = err.context.graph(as_dot=True)
-                view_graph(graph)
-            else:
-                LOGGER.error('the failed resolve context did not generate a graph.')
+        if err.context.graph:
+            graph = err.context.graph(as_dot=True)
+            view_graph(graph)
+        else:
+            LOGGER.error('the failed resolve context did not generate a graph.')
 
         raise
