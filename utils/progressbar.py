@@ -57,9 +57,9 @@ class TarProgressFile(io.FileIO):
             message = 'Overall process: %d of %d'
 
             if self._logger:
-                self._logger(message, (self.tell(), self._total_size))
+                self._logger(message, self.tell(), self._total_size)
             else:
-                print(message % (self.tell(), self._total_size))
+                print(message % self.tell(), self._total_size)
 
         return super(TarProgressFile, self).read(size)
 
