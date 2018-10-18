@@ -8,11 +8,11 @@ import logging
 import abc
 import os
 
-# IMPORT THIRD-PARTY LIBRARIES
-import six
+# IMPORT LOCAL LIBRARIES
+from ..vendors import six
 
 
-LOGGER = logging.getLogger('rezzurect.nuke_builder')
+_LOGGER = logging.getLogger('rezzurect.nuke_builder')
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -54,11 +54,15 @@ class BaseAdapter(object):
         '''
         return ''
 
-    # TODO : Consider making `definition` into a dict
     @staticmethod
-    def get_archive_path(root, file_name):
+    def get_archive_folder(root):
         '''str: Get the recommended folder for archive (installer) files to be.'''
-        return os.path.join(root, 'archive', file_name)
+        return os.path.join(root, 'archive')
+
+    @classmethod
+    def get_archive_path(cls, root, file_name):
+        '''str: Get the recommended folder for archive (installer) files to be.'''
+        return os.path.join(cls.get_archive_folder(root), file_name)
 
     @classmethod
     def get_strategy_order(cls):
@@ -90,7 +94,7 @@ class BaseAdapter(object):
 
             return items
 
-        LOGGER.debug('Finding strategy order for "%s".', cls.__name__)
+        _LOGGER.debug('Finding strategy order for "%s".', cls.__name__)
 
         default_order = [name for name, _ in cls.strategies]
 
@@ -98,16 +102,16 @@ class BaseAdapter(object):
                                   ''.format(name=cls.name.upper()), '')
 
         if package_order:
-            LOGGER.debug('Package order "%s" was found.', package_order)
+            _LOGGER.debug('Package order "%s" was found.', package_order)
             return _split(package_order)
 
         global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
 
         if global_order:
-            LOGGER.debug('Global order "%s" was found.', global_order)
+            _LOGGER.debug('Global order "%s" was found.', global_order)
             return _split(global_order)
 
-        LOGGER.debug('Default order "%s" will be used.', default_order)
+        _LOGGER.debug('Default order "%s" will be used.', default_order)
 
         return default_order
 
@@ -137,9 +141,9 @@ class BaseAdapter(object):
             try:
                 choice(self)
             except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('Strategy "%s" did not succeed.', name)
+                _LOGGER.exception('Strategy "%s" did not succeed.', name)
             else:
-                LOGGER.info('Strategy "%s" succeeded.', name)
+                _LOGGER.info('Strategy "%s" succeeded.', name)
                 return
 
         raise RuntimeError(

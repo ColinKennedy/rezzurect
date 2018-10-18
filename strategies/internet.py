@@ -4,14 +4,14 @@
 '''A set of functions for downloading executable files over the Internet.'''
 
 # IMPORT STANDARD LIBRARIES
+import urlparse
 import logging
-
-# IMPORT THIRD-PARTY LIBRARIES
-from six.moves import urllib
+import os
 
 # IMPORT LOCAL LIBRARIES
 from ..utils import progressbar
 from ..utils import common
+from ..vendors import six
 
 
 _LOGGER = logging.getLogger('rezzurect.internet')
@@ -36,24 +36,23 @@ def _get_url(package, version, system, distribution, architecture):
             'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
         ('nuke', '10.5v8', 'Linux', 64):
             'https://www.foundry.com/products/download_product?file=Nuke10.5v8-linux-x86-release-64.tgz',
+        ('nuke', '11.2v3', 'Windows', 64):
+            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-win-x86-release-64.zip',
+        ('nuke', '10.5v8', 'Windows', 64):
+            'https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip',
     }
 
-    options = [
-        (package, version, system, distribution, architecture),
-        (package, version, system, architecture),
-        (package, system, architecture),
-    ]
+    option = (package, version, system, architecture)
 
-    for option in options:
-        _LOGGER.trace('Checking for URL using "%s".', option)
+    _LOGGER.trace('Checking for URL using "%s".', option)
 
-        try:
-            url = references[option]
-        except KeyError:
-            continue
+    try:
+        url = references[option]
+    except KeyError:
+        return ''
 
-        if common.is_url_reachable(url):
-            return url
+    if common.is_url_reachable(url):
+        return url
 
     return ''
 
@@ -67,11 +66,39 @@ def _install_from_url(url, destination):
 
 
     '''
-    urllib.request.urlretrieve(
+    six.moves.urllib.request.urlretrieve(
         url,
         destination,
         reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
     )
+
+
+def get_recommended_file_name(url):
+    '''Find the filename for the given download URL.
+
+    Args:
+        url (str): The address which points to some file on a remote server.
+                   Example: "https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip"`
+                   Example: "https://www.example/foo/bar.zip"`
+
+    Returns:
+        str: The recommended name, if any.
+
+    '''
+    _, _, path, query, _ = urlparse.urlsplit(url)
+
+    if query:
+        # Example:
+        # `url = 'https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip'`
+        # `query = 'file=Nuke10.5v8-win-x86-release-64.zip'
+        #
+        return url.split('=')[-1]
+
+    # Example:
+    # `url = 'https://www.example/foo/bar.zip'`
+    # `query = '/foo/bar.zip'`
+    #
+    return path.split('/')[-1]
 
 
 def download(package, version, system, distribution, architecture, destination):
@@ -86,13 +113,22 @@ def download(package, version, system, distribution, architecture, destination):
         destination (str): The location where the package's files should download to.
 
     Raises:
-        RuntimeError: If no URL for the given settings could be found.
+        RuntimeError: If no URL for the given settings could be found
+                      or if a filename for the given URL could be found.
 
     '''
     url = _get_url(package, version, system, distribution, architecture)
 
     if not url:
         raise RuntimeError('No URL could be found for "{data}".'.format(
-            data=(package, system, distribution, architecture)))
+            data=(package, version, system, distribution, architecture)))
 
+    file_name = get_recommended_file_name(url)
+
+    if not file_name:
+        raise RuntimeError('No filename could be found for "{url}".'.format(url=url))
+
+    destination = os.path.join(destination, file_name)
     _install_from_url(url, destination)
+
+    return destination
