@@ -4,7 +4,7 @@
 '''A module for rez-specific build instructions.'''
 
 # IMPORT STANDARD LIBRARIES
-import argparse
+import logging
 
 # IMPORT THIRD-PARTY LIBRARIES
 from rez.utils.graph_utils import view_graph
@@ -12,6 +12,9 @@ from rez import build_process_
 from rez import build_system
 from rez import exceptions
 from rez import packages_
+
+
+_LOGGER = logging.getLogger('rezzurect.rez_builder')
 
 
 def build(path):
@@ -60,12 +63,12 @@ def build(path):
             variants=None,
         )
     except exceptions.BuildContextResolveError as err:
-        LOGGER.exception('Path "%s" failed to build.', path)
+        _LOGGER.exception('Path "%s" failed to build.', path)
 
         if err.context.graph:
             graph = err.context.graph(as_dot=True)
             view_graph(graph)
         else:
-            LOGGER.error('the failed resolve context did not generate a graph.')
+            _LOGGER.error('the failed resolve context did not generate a graph.')
 
         raise
