@@ -9,7 +9,7 @@ import os
 
 # IMPORT LOCAL LIBRARIES
 from .adapters.nuke_installation import nuke_installation_setting_windows
-from .adapters.nuke_installation import nuke_installaion_setting_linux
+from .adapters.nuke_installation import nuke_installation_setting_linux
 from .adapters.nuke import nuke_setting_windows
 from .adapters.nuke import nuke_setting_linux
 
@@ -66,7 +66,7 @@ def get_build_adapter(
 # TODO : If aliases turn out to be useless on Windows then delete all
 #        setting-adapter-related code since we won't need it anymore
 #
-def get_setting_adapter(package, version, system, alias=None):
+def get_setting_adapter(package, version, system, env=None, alias=None):
     '''Create an adapter which can be used to add aliases to environment info.
 
     Args:
@@ -77,6 +77,8 @@ def get_setting_adapter(package, version, system, alias=None):
         system (str):
             The name of the OS which `adapter` represents.
             Example: "Darwin", "Linux", "Windows".
+        env (`rez.utils.data_utils.AttrDictWrapper`, optional):
+            A class which is used to append to the user's environment variables.
         alias (callable[str, str], optional):
             A handle to the aliases which is created when a package is installed.
             This handle is used to add aliases to the final package.
@@ -100,7 +102,7 @@ def get_setting_adapter(package, version, system, alias=None):
     except KeyError:
         raise NotImplementedError('Package "{package}" is not supported.'.format(package=package))
 
-    return adapter(version, alias)
+    return adapter(version, env, alias)
 
 
 def add_common_commands(package, version, env, alias):
@@ -119,7 +121,7 @@ def add_common_commands(package, version, env, alias):
             This handle is used to add aliases to the final package.
 
     '''
-    adapter = get_setting_adapter(package, version, platform.system(), alias)
+    adapter = get_setting_adapter(package, version, platform.system(), env, alias)
     adapter.execute()
 
     install_root = env.INSTALL_ROOT.get()

@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 # IMPORT LOCAL LIBRARIES
-from . import nuke_setting
+from . import nuke_installation_setting
 from . import helper
 
 
-class LinuxNukeSettingAdapter(nuke_setting.CommonNukeSettingAdapter):
+class LinuxNukeSettingAdapter(nuke_installation_setting.CommonNukeSettingAdapter):
 
     '''An adapter which is used to set up common settings / aliases for Nuke.'''
 

@@ -14,20 +14,6 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
 
     name = 'nuke'
 
-    def __init__(self, version, alias):
-        '''Create the adapter and add the session's alias class.
-
-        Args:
-            alias_manager (`rezzurect.adapters.common.BaseAdapter` or NoneType):
-                The class which is used to add aliases to the OS.
-            include_common_aliases (`bool`, optional):
-                If True, add a "main" alias to the current session.
-                If False, don't add it.
-                Default is True.
-
-        '''
-        super(CommonNukeSettingAdapter, self).__init__(version, alias)
-
     def get_executable_command(self):
         '''Get the command that is run as the "main" alias.
 

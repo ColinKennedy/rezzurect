@@ -18,16 +18,22 @@ class AbstractBaseAdapter(object):
 
     name = ''
 
-    def __init__(self, version, alias=None):
+    def __init__(self, version, env=None, alias=None):
         '''Create the adapter and add the session's alias class.
 
         Args:
-            alias (callable[str, str]):
-                The class which is used to add aliases to the OS.
+            version (str):
+                The type of the `package` to get aliases of.
+            env (`rez.utils.data_utils.AttrDictWrapper`, optional):
+                A class which is used to append to the user's environment variables.
+            alias (callable[str, str], optional):
+                A handle to the aliases which is created when a package is installed.
+                This handle is used to add aliases to the final package.
 
         '''
         super(AbstractBaseAdapter, self).__init__()
         self.alias = alias
+        self.env = env
         self.version = version
 
     def __make_common_aliases(self, command):
