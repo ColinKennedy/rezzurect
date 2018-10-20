@@ -3,6 +3,7 @@
 
 # IMPORT LOCAL LIBRARIES
 from . import nuke_setting
+from . import helper
 
 
 class LinuxNukeSettingAdapter(nuke_setting.CommonNukeSettingAdapter):
@@ -23,3 +24,7 @@ class LinuxNukeSettingAdapter(nuke_setting.CommonNukeSettingAdapter):
 
         '''
         return helper.get_preinstalled_linux_executables(self.version)
+
+    def execute(self):
+        '''Add aliases and environment variables to the package on-startup.'''
+        super(LinuxNukeSettingAdapter, self).execute()

@@ -8,7 +8,10 @@ import platform
 import os
 
 # IMPORT LOCAL LIBRARIES
-from .adapters.nuke import nuke_setting
+from .adapters.nuke_installation import nuke_installation_setting_windows
+from .adapters.nuke_installation import nuke_installaion_setting_linux
+from .adapters.nuke import nuke_setting_windows
+from .adapters.nuke import nuke_setting_linux
 
 
 _ADAPTERS = dict()
@@ -86,8 +89,10 @@ def get_setting_adapter(package, version, system, alias=None):
 
     '''
     adapters = {
-        ('nuke', 'Linux'): nuke_setting.LinuxNukeAdapter,
-        ('nuke', 'Windows'): nuke_setting.WindowsNukeAdapter,
+        ('nuke', 'Linux'): nuke_setting_linux.LinuxNukeSettingAdapter,
+        ('nuke', 'Windows'): nuke_setting_windows.WindowsNukeSettingAdapter,
+        ('nuke_installation', 'Linux'): nuke_installation_setting_linux.LinuxNukeSettingAdapter,
+        ('nuke_installation', 'Windows'): nuke_installation_setting_windows.WindowsNukeSettingAdapter,
     }
 
     try:

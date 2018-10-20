@@ -54,8 +54,8 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
         return 'Nuke{version} -nc'.format(version=version)
 
     def execute(self):
+        '''Add aliases and environment variables to the package on-startup.'''
         super(CommonNukeSettingAdapter, self).execute()
 
         # Note: Aliases and environment variable settings added here will be
         #       added to all Nuke versions in all OSes.
-        env.PYTHONPATH.append('~/my_modules')

@@ -13,7 +13,7 @@ rezzurect will fail to build / source / run Rez packages correctly.
 import platform
 
 # IMPORT LOCAL LIBRARIES
-from .adapters.nuke import nuke_builder
+from .adapters.nuke_installation import nuke_installation_builder
 from .utils import common
 
 
@@ -48,7 +48,7 @@ def main(
 
     '''
     known_modules = (
-        nuke_builder,
+        nuke_installation_builder,
     )
 
     # TODO : Replace all these args with a single "EnvironmentContext"
