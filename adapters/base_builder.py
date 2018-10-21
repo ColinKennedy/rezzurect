@@ -9,10 +9,11 @@ import abc
 import os
 
 # IMPORT LOCAL LIBRARIES
+from ..strategies import internet
 from ..vendors import six
 
 
-_LOGGER = logging.getLogger('rezzurect.nuke_builder')
+_LOGGER = logging.getLogger('rezzurect.base_builder')
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -39,11 +40,11 @@ class BaseAdapter(object):
 
     @abc.abstractmethod
     def install_from_local(self, source, install):
-        '''Search for a locally-installed Nuke file and install it, if it exists.
+        '''Search for a locally-installed package file and install it, if it exists.
 
         Args:
             source (str):
-                The absolute path to the package folder where the Nuke executable
+                The absolute path to the package folder where the executable
                 would be found.
             install (str):
                 The absolute directory where `source` will be installed into.
@@ -147,10 +148,99 @@ class BaseAdapter(object):
                 return
 
         raise RuntimeError(
-            'No strategy to install the package suceeded. The strategies were, '
-            '"{strategies}".'.format(strategies=[name for name, _ in strategies]))
+            'No strategy in "{obj.name}" to install the package suceeded. '
+            'The strategies were, "{strategies}".'
+            ''.format(obj=self, strategies=[name for name, _ in strategies]))
 
     @abc.abstractmethod
     def get_preinstalled_executables(self):
-        '''str: Get a list of possible pre-installed executable Nuke files.'''
+        '''str: Get a list of possible pre-installed executable files for this package.'''
         return set()
+
+
+def add_from_internet_build(package, system, distribution, architecture, source_path, install_path, adapter):
+    '''Download the installer for `package` and then install it.
+
+    Args:
+        package (str):
+            he name of packaget to get an installer from online.
+        system (str):
+            The name of the OS platform. Example: "Linux", "Windows", etc.
+        distribution (str):
+            The name of the type of OS (Example: "CentOS", "windows", etc.)
+        architecture (str):
+            The bits of the `system`. Example: "x86_64", "AMD64", etc.
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
+        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
+            The object which is used to "install" the files.
+
+    Raises:
+        RuntimeError: If the download failed to install into `destination`.
+
+    '''
+    destination = adapter.get_archive_folder(source_path)
+
+    destination = internet.download(
+        package,
+        adapter.version,
+        system,
+        distribution,
+        architecture,
+        destination,
+    )
+
+    if not os.path.isfile(destination):
+        raise RuntimeError(
+            'Package/Version "{package}/{adapter.version}" could not be downloaded to path, '
+            '"{destination}".'.format(package=package, adapter=adapter, destination=destination))
+
+    _LOGGER.info(
+        'Downloaded package/version "%s/%s" to path, "%s".',
+        package,
+        adapter.version,
+        destination,
+    )
+
+    add_local_filesystem_build(source_path, install_path, adapter)
+
+
+def add_link_build(adapter):
+    '''Add the command which lets the user link Rez to an existing install.
+
+    Args:
+        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
+            The object which is used to search for existing installs.
+
+    Raises:
+        RuntimeError: If no valid executable could be found.
+
+    '''
+    paths = adapter.get_preinstalled_executables()
+
+    for path in paths:
+        if os.path.isfile(path):
+            return
+
+    raise RuntimeError('No expected binary file could be found. '
+                       'Checked "{paths}".'.format(paths=', '.join(sorted(paths))))
+
+
+def add_local_filesystem_build(source_path, install_path, adapter):
+    '''Search the user's files and build the Rez package.
+
+    Args:
+        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
+            The object which is used to "install" the files.
+        source_path (str):
+            The absolute path to where the Rez package is located, on-disk.
+        install_path (str):
+            The absolute path to where the package will be installed into.
+
+    '''
+    if not os.path.isdir(install_path):
+        os.makedirs(install_path)
+
+    adapter.install_from_local(source_path, install_path)
