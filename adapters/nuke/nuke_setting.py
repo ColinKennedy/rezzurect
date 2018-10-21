@@ -44,4 +44,3 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
 
         # Note: Aliases and environment variable settings added here will be
         #       added to all Nuke versions in all OSes.
-        self.env.PYTHONPATH.append('~/my_modules')

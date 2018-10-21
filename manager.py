@@ -7,6 +7,7 @@
 from distutils import dir_util
 import functools
 import getpass
+import logging
 import glob
 import imp
 import os
@@ -32,6 +33,7 @@ PACKAGE_EXCEPTIONS = (
     #
     exceptions.PackageNotFoundError,
 )
+LOGGER = logging.getLogger('rezzurect.manager')
 
 
 def copy_rezzurect_to(path):
@@ -192,6 +194,20 @@ def build_package_recursively(root, package, version='', build_path=''):
             if an attempt to build a package failed.
 
     '''
+    def build_definition(definition):
+        try:
+            rez_build.build(os.path.dirname(definition.__file__))
+        except exceptions.BuildContextResolveError:
+            # TODO : Consider deleting the contents of
+            #        `os.path.dirname(definition.__file__)`
+            #        before erroring out, here
+            #
+            message = 'Definition "%s" failed to build.'
+            LOGGER.exception(message, definition.__file__)
+            raise RuntimeError(message % definition.__file__)
+
+    LOGGER.debug('Building package "%s".', package)
+
     definition = get_package_definition(root, package, version)
 
     if not definition:
@@ -200,23 +216,14 @@ def build_package_recursively(root, package, version='', build_path=''):
     pkg = make_package(definition, build_path)
     requirements = pkg.get_package().requires
 
-    if not requirements:
-        try:
-            rez_build.build(os.path.dirname(definition.__file__))
-        except exceptions.BuildContextResolveError:
-            # TODO : Consider deleting the contents of
-            #        `os.path.dirname(definition.__file__)`
-            #        before erroring out, here
-            #
-            raise RuntimeError(
-                'Definition "{definition}" failed to build. Stderr "{stderr}"'.format(
-                    definition=definition.__file__, stderr=stderr))
-
     for requirement in requirements:
         try:
             resolved_context.ResolvedContext([requirement])
         except PACKAGE_EXCEPTIONS:
             build_package_recursively(root, str(requirement), build_path=build_path)
+
+    # Now that all of the requirements are installed, install this package
+    build_definition(definition)
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):
@@ -256,6 +263,8 @@ def install(package, root, build_path, version=''):
 
     '''
     package = package.split('-')[0]
+
+    LOGGER.debug('Installing "%s".', package)
 
     try:
         # Request the specific package-version
