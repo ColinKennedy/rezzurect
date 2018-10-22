@@ -8,9 +8,7 @@ import subprocess
 import functools
 import logging
 import tarfile
-import zipfile
 import glob
-import stat
 import os
 
 # IMPORT LOCAL LIBRARIES
@@ -33,7 +31,8 @@ class BaseHoudiniAdapter(base_builder.BaseAdapter):
     '''
 
     # TODO : Make a note about how the tar.gz extracts a folder with the same name
-    _install_archive_name_template = 'houdini-{version}-linux_x86_64_gcc*'
+    _install_archive_folder_template = 'houdini-{version}-linux_x86_64_gcc[0-9].[0-9]'
+    _install_archive_name_template = 'houdini-{version}-linux_x86_64_gcc[0-9].[0-9].tar.gz'
 
     @classmethod
     def get_extracted_folder(cls, source, version):
@@ -48,10 +47,10 @@ class BaseHoudiniAdapter(base_builder.BaseAdapter):
                 Example: "17.0.352".
 
         '''
-        file_name = cls._install_archive_name_template.format(version=version)
+        folder_name = cls._install_archive_folder_template.format(version=version)
 
         try:
-            return list(glob.glob(cls.get_archive_path(source, file_name)))[0]
+            return list(glob.glob(cls.get_archive_path(source, folder_name)))[0]
         except IndexError:
             return ''
 
@@ -71,7 +70,7 @@ class BaseHoudiniAdapter(base_builder.BaseAdapter):
         file_name = cls._install_archive_name_template.format(version=version)
 
         try:
-            return list(glob.glob(cls.get_archive_path(source, file_name) + '.tar.gz'))[0]
+            return list(glob.glob(cls.get_archive_path(source, file_name)))[0]
         except IndexError:
             return ''
 
@@ -167,12 +166,12 @@ class LinuxAdapter(BaseHoudiniAdapter):
             EnvironmentError: If the TAR file failed to extract into `install`.
 
         '''
-        tar_file = self.get_archive_path_from_version(source, self.version)
         extracted_folder = self.get_extracted_folder(source, self.version)
 
         if not os.path.isdir(extracted_folder):
             self._extract_tar(source, self.version)
 
+        extracted_folder = self.get_extracted_folder(source, self.version)
         houdini_tar = os.path.join(extracted_folder, 'houdini.tar.gz')
 
         if not os.path.isfile(houdini_tar):
@@ -317,7 +316,7 @@ def register(source_path, install_path, system, distribution, architecture):
     '''
     adapters = (
         ('Linux', LinuxAdapter),
-        ('Windows', WindowsAdapter),
+        # ('Windows', WindowsAdapter),
     )
 
     for system_, adapter in adapters:
@@ -329,8 +328,8 @@ def register(source_path, install_path, system, distribution, architecture):
         add_houdini_local_filesystem_build = functools.partial(
             base_builder.add_local_filesystem_build, source_path, install_path)
 
-        # adapter.strategies.append(('local', add_houdini_local_filesystem_build))
-        # adapter.strategies.append(('link', base_builder.add_link_build))
+        adapter.strategies.append(('local', add_houdini_local_filesystem_build))
+        adapter.strategies.append(('link', base_builder.add_link_build))
         adapter.strategies.append(('internet', add_houdini_from_ftp_build))
 
         chooser.register_build_adapter(adapter, 'houdini_installation', system_)
