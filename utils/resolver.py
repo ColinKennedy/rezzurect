@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''A module which is used to communicate with paths outside of Rezzurect.
+
+Reference:
+    https://github.com/ColinKennedy/tk-config-default2-respawn/wiki/Referring-To-Custom-Code
+
+'''
+
 # IMPORT STANDARD LIBRARIES
 import logging
 import os
@@ -10,43 +17,16 @@ from yaml import parser
 import json
 import yaml
 
+# IMPORT LOCAL LIBRARIES
+from . import helper
+
 
 LOGGER = logging.getLogger('rezzurect.config')
-
-
-# TODO : Add this function to a rez-related module
-def get_current_pipeline_configuration():
-    from sgtk import pipelineconfig_factory
-    return pipelineconfig_factory.from_path(os.getenv('TANK_CURRENT_PC'))
-
-
-def get_current_pipeline_configuration_safe():
-    try:
-        return get_current_pipeline_configuration()
-    except ImportError:
-        return None
-
-
-def get_current_pipeline_configuration_root():
-    return get_current_pipeline_configuration().get_config_location()
-
-
-def get_current_pipeline_configuration_root_safe():
-    try:
-        return get_current_pipeline_configuration_root()
-    except ImportError:
-        return ''
-
-
-try:
-    # TODO : Replace this with a rez-related module function
-    _PIPELINE_CONFIGURATION_ROOT = get_current_pipeline_configuration_root_safe()
-except ImportError:
-    # This happens if a rez package was called from command-line with no Shotgun Context
-    _PIPELINE_CONFIGURATION_ROOT = ''
+_PIPELINE_CONFIGURATION_ROOT = helper.get_current_pipeline_configuration_root_safe()
 
 
 def _read_setting_file(path):
+    '''dict[str, str]: Try to read the given file as a JSON or YAML file.'''
     def _as_json(path):
         with open(path, 'r') as file_:
             return json.load(file_)
@@ -75,51 +55,8 @@ def _read_setting_file(path):
     return dict()
 
 
-def _read_settings_from_shotgun_field():
-    from sgtk import authentication
-    authenticator = authentication.ShotgunAuthenticator()
-    user = authenticator.get_user()
-    sg = user.create_sg_connection()
-
-    try:
-        has_respawn_key_field = bool(sg.schema_field_read('PipelineConfiguration', 'sg_respawn_keys'))
-    except Exception:  # TODO : Replace with `shotgun.Fault`
-        has_respawn_key_field = False
-
-    if not has_respawn_key_field:
-        return dict()
-
-    configuration_id = get_current_pipeline_configuration().get_shotgun_id()
-    configuration = sg.find_one(
-        'PipelineConfiguration',
-        [['id', 'is', configuration_id]],
-        ['sg_respawn_keys'],
-    )
-
-    return json.loads(configuration.get('sg_respawn_keys', ''))
-
-
-def _read_settings_from_shotgun_field_safe():
-    try:
-        return _read_settings_from_shotgun_field()
-    except (ImportError, TypeError):
-        LOGGER.exception('Respawn Shotgun Field field was not found or has a syntax error.')
-
-        configuration = get_current_pipeline_configuration_safe()
-
-        if configuration:
-            LOGGER.debug(
-                'Configuration name "%s" and id "%s" has missing field.',
-                configuration.get_project_disk_name(),
-                configuration.get_shotgun_id(),
-            )
-        else:
-            LOGGER.debug('No configuration was found.')
-
-        return dict()
-
-
 def _read_all_respawnrc_settings():
+    '''dict[str, str]: All of the user-defined Respawn environment keys.'''
     output = dict()
 
     configuration_setting_file = os.path.join(_PIPELINE_CONFIGURATION_ROOT, '.respawnrc')
@@ -127,13 +64,28 @@ def _read_all_respawnrc_settings():
     if os.path.isfile(configuration_setting_file):
         output.update(_read_setting_file(configuration_setting_file))
 
-    output.update(_read_settings_from_shotgun_field_safe())
+    output.update(helper.read_settings_from_shotgun_field_safe())
     output.update(_read_setting_file(os.path.expanduser('~/.respawnrc')))
 
     return output
 
 
 def expand(text):
+    '''Replace the given format text with an absolute path.
+
+    Important:
+        The keys which are used to expand `text` come from
+        the user's environment settings. The only "reserved" key that the user
+        may not modify is "respawn_root", which signifies the current path to
+        the user's current Pipeline Configuration.
+
+    Args:
+        text (str): Some Python string to expand such as "{foo}/bar".
+
+    Returns:
+        str: The expanded text result.
+
+    '''
     settings = _read_all_respawnrc_settings()
     settings['respawn_root'] = _PIPELINE_CONFIGURATION_ROOT
 
