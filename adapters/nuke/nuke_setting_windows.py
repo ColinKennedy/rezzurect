@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The Windows class which adds variables and aliases to Rez Nuke packages.'''
+
 # IMPORT LOCAL LIBRARIES
 from ..nuke_installation import helper
 from . import nuke_setting

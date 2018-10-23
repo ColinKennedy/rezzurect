@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''The Windows class which builds Nuke Rez packages for the user.'''
+
 # IMPORT LOCAL LIBRARIES
 from . import nuke_installation_setting
 from . import helper

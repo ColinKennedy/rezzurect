@@ -346,7 +346,7 @@ def register(source_path, install_path, system, distribution, architecture):
             base_builder.add_local_filesystem_build, source_path, install_path)
 
         adapter.strategies.append(('local', add_nuke_local_filesystem_build))
-        adapter.strategies.append(('link', base_builder.add_link_build))
         adapter.strategies.append(('internet', add_nuke_from_internet_build))
+        adapter.strategies.append(('link', add_link_build))
 
         chooser.register_build_adapter(adapter, 'nuke_installation', system_)
