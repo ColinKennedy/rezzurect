@@ -122,53 +122,53 @@ def build(path):
                     a package.py file).
 
     '''
-    import subprocess
+    # import subprocess
 
-    (stdout, stderr) = subprocess.Popen(
-        ['cd {} && rez-build --install'.format(path)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-    ).communicate()
+    # (_, stderr) = subprocess.Popen(
+    #     ['cd {} && rez-build --install'.format(path)],
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.PIPE,
+    #     shell=True,
+    # ).communicate()
 
-    if stderr.strip():
-        raise ValueError(stderr)
+    # if stderr.strip():
+    #     raise ValueError(stderr)
 
-    # package = packages_.get_developer_package(path)
+    package = packages_.get_developer_package(path)
 
-    # build_system_ = build_system.create_build_system(
-    #     path,
-    #     package=package,
-    #     buildsys_type=None,
-    #     write_build_scripts=False,
-    #     verbose=True,
-    #     build_args=[],
-    #     child_build_args=[],
-    # )
+    build_system_ = build_system.create_build_system(
+        path,
+        package=package,
+        buildsys_type=None,
+        write_build_scripts=False,
+        verbose=True,
+        build_args=[],
+        child_build_args=[],
+    )
 
-    # # create and execute build process
-    # builder = build_process_.create_build_process(
-    #     'local',
-    #     path,
-    #     package=package,
-    #     build_system=build_system_,
-    #     verbose=True,
-    # )
+    # create and execute build process
+    builder = build_process_.create_build_process(
+        'local',
+        path,
+        package=package,
+        build_system=build_system_,
+        verbose=True,
+    )
 
-    # try:
-    #     builder.build(
-    #         install_path=None,
-    #         clean=False,
-    #         install=True,
-    #         variants=None,
-    #     )
-    # except exceptions.BuildContextResolveError as err:
-    #     LOGGER.exception('Path "%s" failed to build.', path)
+    try:
+        builder.build(
+            install_path=None,
+            clean=False,
+            install=True,
+            variants=None,
+        )
+    except exceptions.BuildContextResolveError as err:
+        LOGGER.exception('Path "%s" failed to build.', path)
 
-    #     if err.context.graph:
-    #         graph = err.context.graph(as_dot=True)
-    #         view_graph(graph)
-    #     else:
-    #         LOGGER.error('the failed resolve context did not generate a graph.')
+        if err.context.graph:
+            graph = err.context.graph(as_dot=True)
+            view_graph(graph)
+        else:
+            LOGGER.error('the failed resolve context did not generate a graph.')
 
-    #     raise
+        raise

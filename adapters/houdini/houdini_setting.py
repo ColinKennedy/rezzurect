@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''An adapter (and its functions) for creating and running a Houdini Rez package.'''
+'''An adapter for running a Houdini Rez package.'''
 
 # IMPORT LOCAL LIBRARIES
 from .. import common_setting

@@ -17,7 +17,6 @@ from ... import chooser
 from . import helper
 
 
-_DEFAULT_VALUE = object()
 _LOGGER = logging.getLogger('rezzurect.houdini_builder')
 
 
@@ -125,6 +124,8 @@ class LinuxAdapter(BaseHoudiniAdapter):
             except Exception:
                 _LOGGER.exception('Tar file "%s" failed to extract.', path)
                 raise
+            else:
+                _LOGGER.debug('Tar extraction finished.')
 
     @staticmethod
     def _get_python_tar_files(root):
@@ -321,9 +322,9 @@ def register(source_path, install_path, system, distribution, architecture):
     for system_, adapter in adapters:
         adapter.strategies = []
 
-        add_houdini_from_ftp_build = functools.partial(
-            base_builder.add_from_internet_build,
-            'houdini', system, distribution, architecture, source_path, install_path)
+        # add_houdini_from_ftp_build = functools.partial(
+        #     base_builder.add_from_internet_build,
+        #     'houdini', system, distribution, architecture, source_path, install_path)
         add_houdini_local_filesystem_build = functools.partial(
             base_builder.add_local_filesystem_build, source_path, install_path)
 

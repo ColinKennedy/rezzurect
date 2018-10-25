@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''The Windows class which builds Houdini Rez packages for the user.'''
+'''An adapter for running a Houdini Rez package in Windows.'''
 
 # IMPORT LOCAL LIBRARIES
 from . import houdini_setting

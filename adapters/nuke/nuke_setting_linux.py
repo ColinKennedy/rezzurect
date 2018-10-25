@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''The Linux class which adds variables and aliases to Rez Nuke packages.'''
+'''An adapter for running a Nuke Rez package in Linux.'''
 
 # IMPORT LOCAL LIBRARIES
 from ..nuke_installation import helper
