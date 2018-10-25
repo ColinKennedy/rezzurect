@@ -328,7 +328,8 @@ def register(source_path, install_path, system, distribution, architecture):
             base_builder.add_local_filesystem_build, source_path, install_path)
 
         adapter.strategies.append(('local', add_houdini_local_filesystem_build))
-        adapter.strategies.append(('internet', add_houdini_from_ftp_build))
+        # TODO : Re-add this once SideFX gets back to me. Ticket ID "SESI #67857"
+        # adapter.strategies.append(('internet', add_houdini_from_ftp_build))
         adapter.strategies.append(('link', base_builder.add_link_build))
 
         chooser.register_build_adapter(adapter, 'houdini_installation', system_)
