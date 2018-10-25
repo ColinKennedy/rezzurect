@@ -8,8 +8,12 @@ import platform
 import os
 
 # IMPORT LOCAL LIBRARIES
+from .adapters.houdini_installation import houdini_installation_setting_windows
+from .adapters.houdini_installation import houdini_installation_setting_linux
 from .adapters.nuke_installation import nuke_installation_setting_windows
 from .adapters.nuke_installation import nuke_installation_setting_linux
+from .adapters.houdini import houdini_setting_windows
+from .adapters.houdini import houdini_setting_linux
 from .adapters.nuke import nuke_setting_windows
 from .adapters.nuke import nuke_setting_linux
 
@@ -91,6 +95,10 @@ def get_setting_adapter(package, version, system, env=None, alias=None):
 
     '''
     adapters = {
+        ('houdini', 'Linux'): houdini_setting_linux.LinuxHoudiniSettingAdapter,
+        ('houdini', 'Windows'): houdini_setting_windows.WindowsHoudiniSettingAdapter,
+        ('houdini_installation', 'Linux'): houdini_installation_setting_linux.LinuxHoudiniSettingAdapter,
+        ('houdini_installation', 'Windows'): houdini_installation_setting_windows.WindowsHoudiniSettingAdapter,
         ('nuke', 'Linux'): nuke_setting_linux.LinuxNukeSettingAdapter,
         ('nuke', 'Windows'): nuke_setting_windows.WindowsNukeSettingAdapter,
         ('nuke_installation', 'Linux'): nuke_installation_setting_linux.LinuxNukeSettingAdapter,

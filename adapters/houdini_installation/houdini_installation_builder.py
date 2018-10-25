@@ -4,7 +4,6 @@
 '''A set of general adapter classes which can be used to build Rez packages.'''
 
 # IMPORT STANDARD LIBRARIES
-import subprocess
 import functools
 import logging
 import tarfile
