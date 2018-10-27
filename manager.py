@@ -20,7 +20,7 @@ from rez import exceptions
 import rezzurect
 
 # IMPORT LOCAL LIBRARIES
-from .utils import rez_build
+from .utils import helper
 
 
 _DEFAULT_VALUE = object()
@@ -196,8 +196,8 @@ def build_package_recursively(root, package, version='', build_path=''):
     '''
     def build_definition(definition):
         try:
-            rez_build.build(os.path.dirname(definition.__file__))
-        except exceptions.BuildContextResolveError:
+            helper.build(os.path.dirname(definition.__file__))
+        except Exception:
             # TODO : Consider deleting the contents of
             #        `os.path.dirname(definition.__file__)`
             #        before erroring out, here

@@ -9,6 +9,7 @@ import logging
 import os
 
 # IMPORT LOCAL LIBRARIES
+from ..vendors.six.moves import urllib
 from ..utils import progressbar
 from ..utils import common
 from ..vendors import six
@@ -32,6 +33,11 @@ def _get_url(package, version, system, distribution, architecture):
     '''
     # TODO : Move this to a config file somewhere else
     references = {
+        ('houdini', '16.5.536', 'Linux', 64):
+            'ftp://ftp.sidefx.com/public/Houdini16.5/Build.536/houdini-16.5.536-linux_x86_64_gcc4.8.tar.gz',
+        # TODO : Re-add this once SideFX gets back to me. Ticket ID "SESI #67857"
+        # ('houdini', '17.0.352', 'Linux', 64):
+        #     'https://www.sidefx.com/download/download-houdini/55041/get',
         ('nuke', '11.2v3', 'Linux', 64):
             'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
         ('nuke', '10.5v8', 'Linux', 64):
@@ -64,13 +70,22 @@ def _install_from_url(url, destination):
         url (str): The Internet address to download from.
         destination (str): The location where the package's files should download to.
 
+    Raises:
+        RuntimeError: If the Internet download is interrupted (by the user or
+                      by the Internet connection).
 
     '''
-    six.moves.urllib.request.urlretrieve(
-        url,
-        destination,
-        reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
-    )
+    try:
+        urllib.request.urlretrieve(
+            url,
+            destination,
+            reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
+        )
+    except urllib.ContentTooShortError:
+        # Reference: https://docs.python.org/2/library/urllib.html#urllib.ContentTooShortError
+        # "This can occur, for example, when the download is interrupted."
+        #
+        raise RuntimeError('Download was interrupted')
 
 
 def get_recommended_file_name(url):
