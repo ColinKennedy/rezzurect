@@ -197,7 +197,7 @@ def build_package_recursively(root, package, version='', build_path=''):
     def build_definition(definition):
         try:
             helper.build(os.path.dirname(definition.__file__))
-        except exceptions.BuildContextResolveError:
+        except Exception:
             # TODO : Consider deleting the contents of
             #        `os.path.dirname(definition.__file__)`
             #        before erroring out, here
