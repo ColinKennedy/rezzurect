@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''The Linux class which builds Houdini Rez packages for the user.'''
+'''An adapter for running a Houdini Rez package in Linux.'''
 
 # IMPORT LOCAL LIBRARIES
 from . import houdini_setting

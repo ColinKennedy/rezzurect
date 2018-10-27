@@ -35,8 +35,9 @@ def _get_url(package, version, system, distribution, architecture):
     references = {
         ('houdini', '16.5.536', 'Linux', 64):
             'ftp://ftp.sidefx.com/public/Houdini16.5/Build.536/houdini-16.5.536-linux_x86_64_gcc4.8.tar.gz',
-        ('houdini', '17.0.352', 'Linux', 64):
-            'https://www.sidefx.com/download/download-houdini/55041/get',
+        # TODO : Re-add this once SideFX gets back to me. Ticket ID "SESI #67857"
+        # ('houdini', '17.0.352', 'Linux', 64):
+        #     'https://www.sidefx.com/download/download-houdini/55041/get',
         ('nuke', '11.2v3', 'Linux', 64):
             'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
         ('nuke', '10.5v8', 'Linux', 64):
