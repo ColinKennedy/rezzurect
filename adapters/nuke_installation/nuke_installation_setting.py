@@ -15,7 +15,7 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
     name = 'nuke'
 
     def get_executable_command(self):
-        '''Get the command that is run as the "main" alias.
+        '''The command needed to run Nuke.
 
         Raises:
             EnvironmentError: If the stored version is incorrect.

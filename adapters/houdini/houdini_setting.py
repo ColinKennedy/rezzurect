@@ -16,10 +16,7 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
 
     @staticmethod
     def get_executable_command():
-        '''Get the command that is run as the "main" alias.
-
-        Raises:
-            EnvironmentError: If the stored version is incorrect.
+        '''The command needed to run Houdini.
 
         Returns:
             str: The found command for Houdini's version.

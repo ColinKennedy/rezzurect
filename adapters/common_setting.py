@@ -43,7 +43,7 @@ class AbstractBaseAdapter(object):
     @staticmethod
     @abc.abstractmethod
     def get_executable_command():
-        '''str: The command that is run as the "main" alias, if it is enabled.'''
+        '''str: The command needed to run the program.'''
         return ''
 
     def execute(self):
