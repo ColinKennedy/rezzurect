@@ -122,18 +122,6 @@ def build(path):
                     a package.py file).
 
     '''
-    # import subprocess
-
-    # (_, stderr) = subprocess.Popen(
-    #     ['cd {} && rez-build --install'.format(path)],
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    #     shell=True,
-    # ).communicate()
-
-    # if stderr.strip():
-    #     raise ValueError(stderr)
-
     package = packages_.get_developer_package(path)
 
     build_system_ = build_system.create_build_system(

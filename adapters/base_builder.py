@@ -163,7 +163,7 @@ def add_from_internet_build(package, system, distribution, architecture, source_
 
     Args:
         package (str):
-            he name of packaget to get an installer from online.
+            The name of packaget to get an installer from online.
         system (str):
             The name of the OS platform. Example: "Linux", "Windows", etc.
         distribution (str):
@@ -232,12 +232,12 @@ def add_local_filesystem_build(source_path, install_path, adapter):
     '''Search the user's files and build the Rez package.
 
     Args:
-        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
-            The object which is used to "install" the files.
         source_path (str):
             The absolute path to where the Rez package is located, on-disk.
         install_path (str):
             The absolute path to where the package will be installed into.
+        adapter (`rezzurect.adapters.base_builder.BaseAdapter`):
+            The object which is used to "install" the files.
 
     '''
     if not os.path.isdir(install_path):

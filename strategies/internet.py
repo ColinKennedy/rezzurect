@@ -70,6 +70,9 @@ def _install_from_url(url, destination):
         url (str): The Internet address to download from.
         destination (str): The location where the package's files should download to.
 
+    Raises:
+        RuntimeError: If the Internet download is interrupted (by the user or
+                      by the Internet connection).
 
     '''
     try:
