@@ -18,11 +18,11 @@ import json
 import yaml
 
 # IMPORT LOCAL LIBRARIES
-from . import helper
+from . import multipurpose_helper
 
 
 LOGGER = logging.getLogger('rezzurect.config')
-_PIPELINE_CONFIGURATION_ROOT = helper.get_current_pipeline_configuration_root_safe()
+_PIPELINE_CONFIGURATION_ROOT = multipurpose_helper.get_current_pipeline_configuration_root_safe()
 
 
 def _read_setting_file(path):
@@ -64,7 +64,7 @@ def _read_all_respawnrc_settings():
     if os.path.isfile(configuration_setting_file):
         output.update(_read_setting_file(configuration_setting_file))
 
-    output.update(helper.read_settings_from_shotgun_field_safe())
+    output.update(multipurpose_helper.read_settings_from_shotgun_field_safe())
     output.update(_read_setting_file(os.path.expanduser('~/.respawnrc')))
 
     return output

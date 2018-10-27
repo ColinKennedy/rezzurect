@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''A set of general adapter classes which can be used to build Rez packages.'''
+'''A set of general adapter classes which can be used to build Rez packages.
+
+Houdini-For-Linux comes with a .tar.gz file.
+This file expands into a directory which contains several other .tar.gz files
+as well as a "houdini.install" file. Normally, you'd want to use
+"houdini.install" to build Houdini but since that installer doesn't allow you
+to set a custom directory, we extract the inner .tar.gz files, ourselves, instead.
+
+'''
 
 # IMPORT STANDARD LIBRARIES
 import functools

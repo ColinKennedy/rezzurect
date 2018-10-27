@@ -18,30 +18,16 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
 
     name = 'houdini'
 
-    @staticmethod
-    def get_executable_command():
-        '''Get the command that is run as the "main" alias.
+    def _run_houdini_setup(self, root):
+        '''Create a basic Houdini environment for the current user.
 
-        Raises:
-            EnvironmentError: If the stored version is incorrect.
+        This function is meant to be a copy of the "houdini_setup" file that
+        gets installed with Houdini. (Example: /opt/hfs17.0/houdini_setup).
 
-        Returns:
-            str: The found command for Houdini's version.
+        Args:
+            root (str): The absolute path to where Houdini is installed.
 
         '''
-        return 'houdini'
-
-    def execute(self):
-        '''Add aliases and environment variables to the package on-startup.'''
-        super(CommonHoudiniSettingAdapter, self).execute()
-
-        # Note: Aliases and environment variable settings added here will be
-        #       added to all Houdini versions in all OSes.
-
-        root = self.env.INSTALL_ROOT.get()
-
-        # houdini_setup file :START:
-        # Make sure that Houdini knows where it is installed to
         self.env.HFS = root
 
         self.env.H = self.env.HFS.get()
@@ -56,6 +42,7 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         self.env.TEMP = tempfile.gettempdir()
 
         # TODO : Need JAVA_HOME
+
         library = os.getenv('LD_LIBRARY_PATH', '')
 
         if library:
@@ -71,11 +58,15 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
 
         self.env.HOUDINI_VERSION = '.'.join([major, minor, patch])
 
-        # TODO : remove, maybe
-        self.env.HOUDINI_BUILD_KERNEL = '2.6.32-573.3.1.el6.x86_64'
-        self.env.HOUDINI_BUILD_PLATFORM = 'Red Hat Enterprise Linux Workstation release 6.7 (Santiago)'
-        self.env.HOUDINI_BUILD_COMPILER = '4.8.2'
-        self.env.HOUDINI_BUILD_LIBC = 'glibc 2.12'
+        # These variables are likely to vary depending on the user's OS and
+        # environment so lets note set them ourselves here.
+        #
+        # That said, keep this commented for reference in case it is ever needed.
+        #
+        # self.env.HOUDINI_BUILD_KERNEL = '2.6.32-573.3.1.el6.x86_64'
+        # self.env.HOUDINI_BUILD_PLATFORM = 'Red Hat Enterprise Linux Workstation release 6.7 (Santiago)'
+        # self.env.HOUDINI_BUILD_COMPILER = '4.8.2'
+        # self.env.HOUDINI_BUILD_LIBC = 'glibc 2.12'
 
         self.env.HIH = os.path.join(
             os.getenv('HOME', ''),
@@ -83,7 +74,30 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         )
 
         self.env.HIS = self.env.HH.get()
-        # houdini_setup file :END:
+
+    @staticmethod
+    def get_executable_command():
+        '''Get the command that is run as the "main" alias.
+
+        Raises:
+            EnvironmentError: If the stored version is incorrect.
+
+        Returns:
+            str: The found command for Houdini's version.
+
+        '''
+        return 'houdini'
+
+    def execute(self):
+        '''Add aliases and environment variables to the package on-startup.'''
+        # Note: Aliases and environment variable settings added here will be
+        #       added to all Houdini versions in all OSes.
+        #
+        super(CommonHoudiniSettingAdapter, self).execute()
+
+        root = self.env.INSTALL_ROOT.get()
+
+        self._run_houdini_setup(root)
 
         self.env.CMAKE_PREFIX_PATH.append(os.path.join(root, 'toolkit', 'cmake'))
 
