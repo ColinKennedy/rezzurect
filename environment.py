@@ -15,6 +15,9 @@ from .utils import logger as _logger
 from .utils import common
 
 
+# TODO : Consider moving this to `rezzurect.__init__` so that it is automatically
+#        set up when the module is imported
+#
 _logger.init()
 _LOGGER = logging.getLogger('rezzurect.environment')
 
