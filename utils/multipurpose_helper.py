@@ -16,7 +16,7 @@ from rez import exceptions
 from rez import packages_
 
 
-LOGGER = logging.getLogger('rezzurect.rez_helper')
+LOGGER = logging.getLogger('rezzurect.multipurpose_helper')
 
 
 def get_current_pipeline_configuration():

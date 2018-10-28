@@ -55,7 +55,7 @@ def _read_setting_file(path):
     return dict()
 
 
-def _read_all_respawnrc_settings():
+def get_settings():
     '''dict[str, str]: All of the user-defined Respawn environment keys.'''
     output = dict()
 
@@ -86,7 +86,7 @@ def expand(text):
         str: The expanded text result.
 
     '''
-    settings = _read_all_respawnrc_settings()
+    settings = get_settings()
     settings['respawn_root'] = _PIPELINE_CONFIGURATION_ROOT
 
     try:
