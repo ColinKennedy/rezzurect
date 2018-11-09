@@ -14,12 +14,10 @@ to set a custom directory, we extract the inner .tar.gz files, ourselves, instea
 # IMPORT STANDARD LIBRARIES
 import functools
 import logging
-import tarfile
 import glob
 import os
 
 # IMPORT LOCAL LIBRARIES
-from ...utils import progressbar
 from .. import base_builder
 from ... import chooser
 from . import helper
@@ -86,54 +84,6 @@ class LinuxAdapter(BaseHoudiniAdapter):
     '''An adapter for installing Houdini onto a Linux machine.'''
 
     name = 'houdini'
-
-    @classmethod
-    def _extract_tar(cls, source, version):
-        '''Extract the Houdini TAR archive to get the main Houdini folder.
-
-        Args:
-            source (str): The absolute path to this Rez package's version folder.
-            version (str): The raw version information which is used to "find"
-                           the TAR archive name. Example: "11.2v3".
-
-        Raises:
-            EnvironmentError: If no archive file could be found.
-
-        '''
-        path = cls.get_archive_path_from_version(source, version)
-
-        if not os.path.isfile(path):
-            raise EnvironmentError('Tar file "{path}" does not exist.'
-                                   ''.format(path=path))
-
-        return cls._extract_tar_file(path)
-
-    @staticmethod
-    def _extract_tar_file(path, destination=''):
-        '''Extract the given TAR archive file to some path on-disk.
-
-        Args:
-            path (str):
-                The location of the TAR archive to extract.
-            destination (str, optional):
-                The location where `path` TAR will be extracted to.
-                If no destination is given, the TAR archive's directory will
-                be used instead. Default: "".
-
-        '''
-        if not destination:
-            destination = os.path.dirname(path)
-
-        _LOGGER.debug('Extracting tar file "%s".', path)
-
-        with tarfile.open(fileobj=progressbar.TarProgressFile(path, logger=_LOGGER.trace)) as tar:
-            try:
-                tar.extractall(path=destination)
-            except Exception:
-                _LOGGER.exception('Tar file "%s" failed to extract.', path)
-                raise
-            else:
-                _LOGGER.debug('Tar extraction finished.')
 
     @staticmethod
     def _get_python_tar_files(root):

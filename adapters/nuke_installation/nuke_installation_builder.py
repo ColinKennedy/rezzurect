@@ -133,34 +133,6 @@ class LinuxAdapter(BaseNukeAdapter):
     _install_archive_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer'
 
-    @classmethod
-    def _extract_tar(cls, source, version):
-        '''Extract the Nuke TAR archive to get the Nuke ZIP installer.
-
-        Args:
-            source (str): The absolute path to this Rez package's version folder.
-            version (str): The raw version information which is used to "find"
-                           the TAR archive name. Example: "11.2v3".
-
-        Raises:
-            EnvironmentError: If no archive file could be found.
-
-        '''
-        path = cls.get_archive_path_from_version(source, version)
-
-        if not os.path.isfile(path):
-            raise EnvironmentError('Tar file "{path}" does not exist.'
-                                   ''.format(path=path))
-
-        _LOGGER.debug('Extracting tar file "%s".', path)
-
-        with tarfile.open(fileobj=progressbar.TarProgressFile(path, logger=_LOGGER.trace)) as tar:
-            try:
-                tar.extractall(path=os.path.dirname(path))
-            except Exception:
-                _LOGGER.exception('Tar file "%s" failed to extract.', path)
-                raise
-
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.
 
@@ -190,18 +162,17 @@ class LinuxAdapter(BaseNukeAdapter):
             EnvironmentError: If the Zip file failed to extract Nuke into `install`.
 
         '''
-        major, minor, patch = helper.get_version_parts(self.version)
-
         try:
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
         except EnvironmentError:
-            self._extract_tar(source, (major, minor, patch))
+            self._extract_tar(source, self.version)
             zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
 
         _LOGGER.debug('Unzipping "%s".', zip_file_path)
 
         self._extract_zip(zip_file_path, install)
 
+        major, minor, _ = helper.get_version_parts(self.version)
         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
         executable = os.path.join(install, executable)
 
