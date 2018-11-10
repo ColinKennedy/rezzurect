@@ -75,16 +75,28 @@ def get_settings():
     '''dict[str, str]: All of the user-defined Respawn environment keys.'''
     output = dict()
 
-    configuration_setting_file = os.path.join(_PIPELINE_CONFIGURATION_ROOT, '.respawnrc')
-
-    if os.path.isfile(configuration_setting_file):
-        output.update(_read_setting_file(configuration_setting_file))
-
+    output.update(read_configuration_setting_file())
     output.update(multipurpose_helper.read_settings_from_shotgun_field_safe())
-    output.update(_read_setting_file(os.path.expanduser('~/.respawnrc')))
+    output.update(read_user_settings_file())
     output.update(get_custom_keys_from_environment())
 
     return output
+
+
+def read_configuration_setting_file():
+    if not os.path.isdir(_PIPELINE_CONFIGURATION_ROOT):
+        return dict()
+
+    settings_file = os.path.join(_PIPELINE_CONFIGURATION_ROOT, '.respawnrc')
+
+    if not os.path.isfile(settings_file):
+        return dict()
+
+    return _read_setting_file(settings_file)
+
+
+def read_user_settings_file():
+    return _read_setting_file(os.path.expanduser('~/.respawnrc'))
 
 
 def expand(text):
