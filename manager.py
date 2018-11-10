@@ -194,9 +194,12 @@ def build_package_recursively(root, package, version='', build_path=''):
             if an attempt to build a package failed.
 
     '''
-    def build_definition(definition):
+    def build_definition(definition, build_path):
         try:
-            multipurpose_helper.build(os.path.dirname(definition.__file__))
+            multipurpose_helper.build(
+                os.path.dirname(definition.__file__),
+                install_path=build_path,
+            )
         except Exception:
             # TODO : Consider deleting the contents of
             #        `os.path.dirname(definition.__file__)`
@@ -220,10 +223,13 @@ def build_package_recursively(root, package, version='', build_path=''):
         try:
             resolved_context.ResolvedContext([requirement])
         except PACKAGE_EXCEPTIONS:
-            build_package_recursively(root, str(requirement), build_path=build_path)
+            requirement_package, requirement_version = str(requirement).split('-')
+
+            build_package_recursively(
+                root, requirement_package, requirement_version, build_path=build_path)
 
     # Now that all of the requirements are installed, install this package
-    build_definition(definition)
+    build_definition(definition, build_path)
 
 
 def mirror(attribute, module, package, default=_DEFAULT_VALUE):
@@ -250,7 +256,7 @@ def mirror(attribute, module, package, default=_DEFAULT_VALUE):
 
 
 def install(package, root, build_path, version=''):
-    '''Install a given package into .
+    '''Install a given package into `build_path`.
 
     Args:
         root (str):

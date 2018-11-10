@@ -105,7 +105,7 @@ def read_settings_from_shotgun_field_safe():
         return dict()
 
 
-def build(path):
+def build(path, install_path=''):
     '''Build the given Rez package directory into a Rez package.
 
     This command is basically a copy/paste of
@@ -118,8 +118,14 @@ def build(path):
     ```
 
     Args:
-        path (str): The path to a package definition folder (which must contain
-                    a package.py file).
+        path (str):
+            The path to a package definition folder
+            (which must contain a package.py file).
+        install_path (str, optional):
+            The absolute path to a directory on-disk which will be used to
+            build `path`. If no path is given then the user's local_package_path
+            is used instead (which is what Rez defaults to).
+            Default: "".
 
     '''
     package = packages_.get_developer_package(path)
@@ -145,7 +151,7 @@ def build(path):
 
     try:
         builder.build(
-            install_path=None,
+            install_path=install_path or None,
             clean=False,
             install=True,
             variants=None,
