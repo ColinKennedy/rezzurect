@@ -213,7 +213,7 @@ class BaseAdapter(object):
         return set()
 
 
-def add_from_internet_build(package, system, distribution, architecture, source_path, install_path, adapter):
+def add_from_internet_build(package, system, architecture, source_path, install_path, adapter):
     '''Download the installer for `package` and then install it.
 
     Args:
@@ -221,8 +221,6 @@ def add_from_internet_build(package, system, distribution, architecture, source_
             The name of packaget to get an installer from online.
         system (str):
             The name of the OS platform. Example: "Linux", "Windows", etc.
-        distribution (str):
-            The name of the type of OS (Example: "CentOS", "windows", etc.)
         architecture (str):
             The bits of the `system`. Example: "x86_64", "AMD64", etc.
         source_path (str):
@@ -242,7 +240,6 @@ def add_from_internet_build(package, system, distribution, architecture, source_
         package,
         adapter.version,
         system,
-        distribution,
         architecture,
         destination,
     )

@@ -12,40 +12,41 @@ import os
 from ..vendors.six.moves import urllib
 from ..utils import progressbar
 from ..utils import common
-from ..vendors import six
 
 
 _LOGGER = logging.getLogger('rezzurect.internet')
 
 
-def _get_url(package, version, system, distribution, architecture):
+def _get_url(package, version, system, architecture):
     '''Find the URL for the package and system and return it.
 
     Args:
         package (str): The name of the package to get a URL for. Example: "houdini".
         system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
         architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
-        distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
 
     Returns:
         str: The found URL, if any.
 
     '''
     # TODO : Move this to a config file somewhere else
+    nuke_root = 'https://www.foundry.com/products/download_product?file='
+    houdini_ftp_165 = 'ftp://ftp.sidefx.com/public/Houdini16.5/Build.536'
+
     references = {
         ('houdini', '16.5.536', 'Linux', 64):
-            'ftp://ftp.sidefx.com/public/Houdini16.5/Build.536/houdini-16.5.536-linux_x86_64_gcc4.8.tar.gz',
+            '{0}/houdini-16.5.536-linux_x86_64_gcc4.8.tar.gz'.format(houdini_ftp_165),
         # TODO : Re-add this once SideFX gets back to me. Ticket ID "SESI #67857"
         # ('houdini', '17.0.352', 'Linux', 64):
         #     'https://www.sidefx.com/download/download-houdini/55041/get',
         ('nuke', '11.2v3', 'Linux', 64):
-            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-linux-x86-release-64.tgz',
+            '{nuke_root}Nuke11.2v3-linux-x86-release-64.tgz'.format(nuke_root=nuke_root),
         ('nuke', '10.5v8', 'Linux', 64):
-            'https://www.foundry.com/products/download_product?file=Nuke10.5v8-linux-x86-release-64.tgz',
+            '{nuke_root}Nuke10.5v8-linux-x86-release-64.tgz'.format(nuke_root=nuke_root),
         ('nuke', '11.2v3', 'Windows', 64):
-            'https://www.foundry.com/products/download_product?file=Nuke11.2v3-win-x86-release-64.zip',
+            '{nuke_root}Nuke11.2v3-win-x86-release-64.zip'.format(nuke_root=nuke_root),
         ('nuke', '10.5v8', 'Windows', 64):
-            'https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip',
+            '{nuke_root}Nuke10.5v8-win-x86-release-64.zip'.format(nuke_root=nuke_root),
     }
 
     option = (package, version, system, architecture)
@@ -93,7 +94,6 @@ def get_recommended_file_name(url):
 
     Args:
         url (str): The address which points to some file on a remote server.
-                   Example: "https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip"`
                    Example: "https://www.example/foo/bar.zip"`
 
     Returns:
@@ -102,11 +102,11 @@ def get_recommended_file_name(url):
     '''
     _, _, path, query, _ = urlparse.urlsplit(url)
 
+    # Example:
+    # url='https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip'
+    # query='file=Nuke10.5v8-win-x86-release-64.zip'
+    #
     if query:
-        # Example:
-        # `url = 'https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip'`
-        # `query = 'file=Nuke10.5v8-win-x86-release-64.zip'
-        #
         return url.split('=')[-1]
 
     # Example:
@@ -116,7 +116,7 @@ def get_recommended_file_name(url):
     return path.split('/')[-1]
 
 
-def download(package, version, system, distribution, architecture, destination):
+def download(package, version, system, architecture, destination):
     '''Download a package from online, using http/https.
 
     Args:
@@ -124,7 +124,6 @@ def download(package, version, system, distribution, architecture, destination):
         version (str): The specific version of `package` to download.
         system (str): The name of the OS platform. Example: "Linux", "Windows", etc.
         architecture (str): The bits of the `system`. Example: "x86_64", "AMD64", etc.
-        distribution (str): The name of the type of OS (Example: "CentOS", "windows", etc.)
         destination (str): The location where the package's files should download to.
 
     Raises:
@@ -132,11 +131,11 @@ def download(package, version, system, distribution, architecture, destination):
                       or if a filename for the given URL could be found.
 
     '''
-    url = _get_url(package, version, system, distribution, architecture)
+    url = _get_url(package, version, system, architecture)
 
     if not url:
         raise RuntimeError('No URL could be found for "{data}".'.format(
-            data=(package, version, system, distribution, architecture)))
+            data=(package, version, system, architecture)))
 
     file_name = get_recommended_file_name(url)
 

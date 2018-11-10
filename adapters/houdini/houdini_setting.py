@@ -5,7 +5,6 @@
 
 # IMPORT LOCAL LIBRARIES
 from .. import common_setting
-from . import helper
 
 
 class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
@@ -24,7 +23,7 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         '''
         return 'houdini-bin'
 
-    def execute(self):
+    def execute(self):  # pylint: disable=useless-super-delegation
         '''Add aliases and environment variables to the package on-startup.'''
         super(CommonHoudiniSettingAdapter, self).execute()
 

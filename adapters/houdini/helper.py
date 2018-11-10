@@ -41,22 +41,8 @@ def get_preinstalled_linux_executables(version):
 
 
 def get_preinstalled_windows_executables(version):
-    # '''Get a list of possible pre-installed executable Houdini files.
-
-    # Args:
-    #     version (str): A version of Houdini. Example: "17.0.352".
-
-    # Raises:
-    #     RuntimeError:
-    #         If we can't get version information from the stored version then
-    #         this function will fail. Normally though, assuming this adapter
-    #         was built correctly, this shouldn't occur.
-
-    # Returns:
-    #     str: The absolute path to a Houdini executable.
-
-    # '''
-    raise NotImplementedError('need to write this')
+    '''str: Get a list of possible pre-installed executable Houdini files.'''
+    raise NotImplementedError('need to write this ' + version)
     # major, minor, patch = get_version_parts(version)
 
     # if not major:

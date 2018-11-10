@@ -39,7 +39,7 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
         version = '.'.join([match.group('major'), match.group('minor')])
         return 'Nuke{version} -nc'.format(version=version)
 
-    def execute(self):
+    def execute(self):  # pylint: disable=useless-super-delegation
         super(CommonNukeSettingAdapter, self).execute()
 
         # Note: Aliases and environment variable settings added here will be
