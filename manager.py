@@ -250,7 +250,7 @@ def mirror(attribute, module, package, default=_DEFAULT_VALUE):
 
 
 def install(package, root, build_path, version=''):
-    '''Install a given package into .
+    '''Install a given package into `build_path`.
 
     Args:
         root (str):
