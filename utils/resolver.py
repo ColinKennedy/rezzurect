@@ -112,3 +112,14 @@ def expand(text):
         LOGGER.exception(
             'Text "%s" is missing one or more keys. Keys found, "%s".', text, settings)
         raise
+
+
+def expand_first(options, default=''):
+    '''str: Try a number of different string options until one succeeds.'''
+    for option in options:
+        try:
+            return expand(option)
+        except KeyError:
+            pass
+
+    return default
