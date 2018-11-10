@@ -11,17 +11,20 @@ Reference:
 # IMPORT STANDARD LIBRARIES
 import logging
 import os
+import re
 
 # IMPORT THIRD-PARTY LIBRARIES
 from yaml import parser
 import json
 import yaml
+import six
 
 # IMPORT LOCAL LIBRARIES
 from . import multipurpose_helper
 
 
 LOGGER = logging.getLogger('rezzurect.config')
+_ENVIRONMENT_EXPRESSION = re.compile('REZZURECT_CUSTOM_KEY_(?P<key>\w+)')
 _PIPELINE_CONFIGURATION_ROOT = multipurpose_helper.get_current_pipeline_configuration_root_safe()
 
 
@@ -55,6 +58,19 @@ def _read_setting_file(path):
     return dict()
 
 
+def get_custom_keys_from_environment():
+    '''dict[str, str]: Get every user-defined custom key and its value.'''
+    keys = dict()
+
+    for key, value in six.iteritems(os.environ):
+        match = _ENVIRONMENT_EXPRESSION.match(key)
+
+        if match:
+            keys[match.group('key')] = value
+
+    return keys
+
+
 def get_settings():
     '''dict[str, str]: All of the user-defined Respawn environment keys.'''
     output = dict()
@@ -66,6 +82,7 @@ def get_settings():
 
     output.update(multipurpose_helper.read_settings_from_shotgun_field_safe())
     output.update(_read_setting_file(os.path.expanduser('~/.respawnrc')))
+    output.update(get_custom_keys_from_environment())
 
     return output
 
