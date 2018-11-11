@@ -36,7 +36,7 @@ def get_current_pipeline_configuration_safe():
 
     Returns:
         `sgtk.pipelineconfig.PipelineConfiguration` or NoneType:
-            The found pipeline context or nothing, if not found.
+            The found Configuration.
 
     '''
     try:
