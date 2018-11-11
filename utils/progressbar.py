@@ -25,7 +25,7 @@ class TarProgressFile(io.FileIO):
 
     '''
 
-    def __init__(self, path, logger=None, *args, **kwargs):
+    def __init__(self, path, logger=None):
         '''Create the object and store the given logger.
 
         Args:
@@ -35,13 +35,10 @@ class TarProgressFile(io.FileIO):
                 Some logger to use to print the progress.
                 If no logger is given, the progress messages are printed, instead.
                 Default is None.
-            *args (tuple):
-                Optional args for this object.
-            *kwargs (tuple):
-                Optional args for this object.
 
         '''
-        super(TarProgressFile, self).__init__(path, *args, **kwargs)
+        super(TarProgressFile, self).__init__(path)
+
         self._steps = set()
         self._total_size = os.path.getsize(path)
         self._logger = logger
@@ -64,7 +61,7 @@ class TarProgressFile(io.FileIO):
         return super(TarProgressFile, self).read(size)
 
 
-class UrllibProgress(object):
+class UrllibProgress(object):  # pylint: disable=too-few-public-methods
 
     '''A class which prints the progress of downloaded files from urllib.
 
@@ -90,10 +87,11 @@ class UrllibProgress(object):
 
         '''
         super(UrllibProgress, self).__init__()
+
         self._steps = set()
         self._logger = logger
 
-    def download_progress_hook(self, count, block, total):
+    def download_progress_hook(self, count, block, total):  # pylint: disable=unused-argument
         '''Print out the progress to the user.
 
         Args:

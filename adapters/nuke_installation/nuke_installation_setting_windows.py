@@ -27,6 +27,9 @@ class WindowsNukeSettingAdapter(nuke_installation_setting.CommonNukeSettingAdapt
         '''
         return helper.get_preinstalled_windows_executables(self.version)
 
-    def execute(self):
+    def execute(self):  # pylint: disable=useless-super-delegation
         '''Add aliases and environment variables to the package on-startup.'''
         super(WindowsNukeSettingAdapter, self).execute()
+
+        # Note: Aliases and environment variable settings added here will be
+        #       added to all Nuke versions in Windows.
