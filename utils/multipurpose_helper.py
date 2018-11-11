@@ -60,22 +60,24 @@ def get_current_pipeline_configuration_root_safe():
 
 def _read_settings_from_shotgun_field():
     '''dict[str, str]: Get the user's Respawn keys using their Toolkit context.'''
+    from tank_vendor.shotgun_api3 import shotgun
     from sgtk import authentication
 
     authenticator = authentication.ShotgunAuthenticator()
     user = authenticator.get_user()
-    sg = user.create_sg_connection()
+    shotgun_connection = user.create_sg_connection()
 
     try:
-        has_respawn_key_field = bool(sg.schema_field_read('PipelineConfiguration', 'sg_respawn_keys'))
-    except Exception:  # TODO : Replace with `shotgun.Fault`
+        has_respawn_key_field = \
+            bool(shotgun_connection.schema_field_read('PipelineConfiguration', 'sg_respawn_keys'))
+    except shotgun.Fault:
         has_respawn_key_field = False
 
     if not has_respawn_key_field:
         return dict()
 
     configuration_id = get_current_pipeline_configuration().get_shotgun_id()
-    configuration = sg.find_one(
+    configuration = shotgun_connection.find_one(
         'PipelineConfiguration',
         [['id', 'is', configuration_id]],
         ['sg_respawn_keys'],
@@ -89,7 +91,7 @@ def read_settings_from_shotgun_field_safe():
     try:
         return _read_settings_from_shotgun_field()
     except (ImportError, TypeError):
-        LOGGER.exception('Respawn Shotgun Field field was not found or has a syntax error.')
+        LOGGER.exception('Respawn Shotgun Field was not found or has a syntax error.')
 
         configuration = get_current_pipeline_configuration_safe()
 

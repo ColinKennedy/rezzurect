@@ -25,9 +25,6 @@ def attach_trace_level():
     trace_number = logging.DEBUG - 1
     logging.addLevelName(trace_number, 'TRACE')
 
-    # TODO : If I can subclass `logging.Logger` and add trace as a proper
-    #        method then do that. Otherwise, keep this hacky function
-    #
     def trace(self, message, *args, **kws):
         '''Check if TRACE is enabled and, if so, log the given message.'''
         if self.isEnabledFor(trace_number):

@@ -7,13 +7,11 @@
 import subprocess
 import functools
 import logging
-import tarfile
 import zipfile
 import stat
 import os
 
 # IMPORT LOCAL LIBRARIES
-from ...utils import progressbar
 from .. import base_builder
 from ... import chooser
 from . import helper

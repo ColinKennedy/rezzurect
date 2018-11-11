@@ -10,12 +10,12 @@ Reference:
 
 # IMPORT STANDARD LIBRARIES
 import logging
+import json
 import os
 import re
 
 # IMPORT THIRD-PARTY LIBRARIES
 from yaml import parser
-import json
 import yaml
 import six
 
@@ -24,7 +24,7 @@ from . import multipurpose_helper
 
 
 LOGGER = logging.getLogger('rezzurect.config')
-_ENVIRONMENT_EXPRESSION = re.compile('REZZURECT_CUSTOM_KEY_(?P<key>\w+)')
+_ENVIRONMENT_EXPRESSION = re.compile(r'REZZURECT_CUSTOM_KEY_(?P<key>\w+)')
 _PIPELINE_CONFIGURATION_ROOT = multipurpose_helper.get_current_pipeline_configuration_root_safe()
 
 
@@ -84,6 +84,7 @@ def get_settings():
 
 
 def read_configuration_setting_file():
+    '''dict[str, str]: Get the custom keys for this Configuration.'''
     if not os.path.isdir(_PIPELINE_CONFIGURATION_ROOT):
         return dict()
 
@@ -96,7 +97,13 @@ def read_configuration_setting_file():
 
 
 def read_user_settings_file():
-    return _read_setting_file(os.path.expanduser('~/.respawnrc'))
+    '''dict[str, str]: Get every user-defined custom key.'''
+    settings_file = os.path.expanduser('~/.respawnrc')
+
+    if not os.path.isfile(settings_file):
+        return dict()
+
+    return _read_setting_file(settings_file)
 
 
 def expand(text):

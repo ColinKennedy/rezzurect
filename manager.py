@@ -149,7 +149,7 @@ def get_package_definition(root, package, version=''):
             package_path,
         )
     except ImportError:
-        return
+        pass
 
 
 def make_package(definition, build_path):
