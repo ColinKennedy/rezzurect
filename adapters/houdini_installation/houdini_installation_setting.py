@@ -64,7 +64,8 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         # That said, keep this commented for reference in case it is ever needed.
         #
         # self.env.HOUDINI_BUILD_KERNEL = '2.6.32-573.3.1.el6.x86_64'
-        # self.env.HOUDINI_BUILD_PLATFORM = 'Red Hat Enterprise Linux Workstation release 6.7 (Santiago)'
+        # self.env.HOUDINI_BUILD_PLATFORM = \
+        #     'Red Hat Enterprise Linux Workstation release 6.7 (Santiago)'
         # self.env.HOUDINI_BUILD_COMPILER = '4.8.2'
         # self.env.HOUDINI_BUILD_LIBC = 'glibc 2.12'
 
@@ -98,5 +99,7 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         self.env.PATH.append(os.path.join(root, 'bin'))
         self.env.PATH.append(os.path.join(root, 'houdini', 'sbin'))
 
-        self.env.PYTHONPATH.append(os.path.join(root, 'houdini', 'python2.7libs'))
-        self.env.PYTHONPATH.append(os.path.join(root, 'python', 'lib', 'python2.7', 'site-packages'))
+        self.env.PYTHONPATH.append(
+            os.path.join(root, 'houdini', 'python2.7libs'))
+        self.env.PYTHONPATH.append(
+            os.path.join(root, 'python', 'lib', 'python2.7', 'site-packages'))

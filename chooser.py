@@ -95,14 +95,22 @@ def get_setting_adapter(package, version, system, env=None, alias=None):
 
     '''
     adapters = {
-        ('houdini', 'Linux'): houdini_setting_linux.LinuxHoudiniSettingAdapter,
-        ('houdini', 'Windows'): houdini_setting_windows.WindowsHoudiniSettingAdapter,
-        ('houdini_installation', 'Linux'): houdini_installation_setting_linux.LinuxHoudiniSettingAdapter,
-        ('houdini_installation', 'Windows'): houdini_installation_setting_windows.WindowsHoudiniSettingAdapter,
-        ('nuke', 'Linux'): nuke_setting_linux.LinuxNukeSettingAdapter,
-        ('nuke', 'Windows'): nuke_setting_windows.WindowsNukeSettingAdapter,
-        ('nuke_installation', 'Linux'): nuke_installation_setting_linux.LinuxNukeSettingAdapter,
-        ('nuke_installation', 'Windows'): nuke_installation_setting_windows.WindowsNukeSettingAdapter,
+        ('houdini', 'Linux'):
+            houdini_setting_linux.LinuxHoudiniSettingAdapter,
+        ('houdini', 'Windows'):
+            houdini_setting_windows.WindowsHoudiniSettingAdapter,
+        ('houdini_installation', 'Linux'):
+            houdini_installation_setting_linux.LinuxHoudiniSettingAdapter,
+        ('houdini_installation', 'Windows'):
+            houdini_installation_setting_windows.WindowsHoudiniSettingAdapter,
+        ('nuke', 'Linux'):
+            nuke_setting_linux.LinuxNukeSettingAdapter,
+        ('nuke', 'Windows'):
+            nuke_setting_windows.WindowsNukeSettingAdapter,
+        ('nuke_installation', 'Linux'):
+            nuke_installation_setting_linux.LinuxNukeSettingAdapter,
+        ('nuke_installation', 'Windows'):
+            nuke_installation_setting_windows.WindowsNukeSettingAdapter,
     }
 
     try:

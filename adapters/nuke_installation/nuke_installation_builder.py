@@ -193,6 +193,7 @@ class WindowsAdapter(BaseNukeAdapter):
     _install_archive_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.zip'
     _install_file_name_template = 'Nuke{major}.{minor}v{patch}-win-x86-release-64.exe'
 
+    # https://learn.foundry.com/nuke/content/getting_started/installation/installing_nuke_win.html
     @staticmethod
     def _get_base_command(executable, root):
         '''Make the command used to install Nuke, on Windows.
@@ -202,8 +203,6 @@ class WindowsAdapter(BaseNukeAdapter):
             root (str): The absolute directory to where the ".exe" will send files to.
 
         '''
-        # Reference: https://learn.foundry.com/nuke/content/getting_started/installation/installing_nuke_win.html
-        #
         # Note: The ".exe" file normally gives you a few window prompts to have
         #       to click through.  We add "/silent" to skip these prompts and
         #       go straight to installation. Use "/verysilent" to hide the
