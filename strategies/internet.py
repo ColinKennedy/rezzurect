@@ -4,14 +4,13 @@
 '''A set of functions for downloading executable files over the Internet.'''
 
 # IMPORT STANDARD LIBRARIES
-import urlparse
 import logging
 import os
 
 # IMPORT LOCAL LIBRARIES
-from ..vendors.six.moves import urllib
 from ..utils import progressbar
 from ..utils import common
+from ..vendors import six
 
 
 _LOGGER = logging.getLogger('rezzurect.internet')
@@ -77,12 +76,12 @@ def _install_from_url(url, destination):
 
     '''
     try:
-        urllib.request.urlretrieve(
+        six.moves.urllib.request.urlretrieve(
             url,
             destination,
             reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
         )
-    except urllib.ContentTooShortError:
+    except six.moves.urllib.ContentTooShortError:
         # Reference: https://docs.python.org/2/library/urllib.html#urllib.ContentTooShortError
         # "This can occur, for example, when the download is interrupted."
         #
@@ -100,7 +99,7 @@ def get_recommended_file_name(url):
         str: The recommended name, if any.
 
     '''
-    _, _, path, query, _ = urlparse.urlsplit(url)
+    _, _, path, query, _ = six.moves.urlparse.urlsplit(url)
 
     # Example:
     # url='https://www.foundry.com/products/download_product?file=Nuke10.5v8-win-x86-release-64.zip'

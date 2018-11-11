@@ -5,14 +5,16 @@
 
 # IMPORT STANDARD LIBRARIES
 import platform
-import urllib2
+
+# IMPORT THIRD-PARTY LIBRARIES
+from six.moves import urllib
 
 
 def is_url_reachable(url):
     '''bool: If the http/https URL points to a valid address.'''
     try:
-        urllib2.urlopen(url)
-    except (urllib2.HTTPError, urllib2.URLError):
+        urllib.request.urlopen(url)
+    except (urllib.HTTPError, urllib.URLError):
         return False
 
     return True
