@@ -10,7 +10,7 @@ Rez packages in order to find rezzurect and other helper modules whenever Rez
 is building or entering a package.
 
 `init_custom_pythonpath` is used to link the user's Shotgun session (again,
-using "RESPAWN_PYTHONPATH") to the Rez packages that it will build or run.
+using `RESPAWN_PYTHONPATH`) to the Rez packages that it will build or run.
 
 '''
 
@@ -19,7 +19,7 @@ import sys
 import os
 
 # IMPORT LOCAL LIBRARIES
-from . import _rezzurect_config
+import _rezzurect_config
 
 
 INSTALL_FOLDER_NAME = 'install'

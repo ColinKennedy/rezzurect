@@ -130,6 +130,25 @@ def build(path, install_path=''):
             Default: "".
 
     '''
+    # import subprocess
+
+    # command = 'cd "{path}" && rez-build --install'.format(path=path)
+
+    # if install_path:
+    #     command += ' --prefix {install_path}'.format(install_path=install_path)
+
+    # process = subprocess.Popen(
+    #     [command],
+    #     stdout=subprocess.PIPE,
+    #     stderr=subprocess.PIPE,
+    #     shell=True
+    # )
+
+    # (_, stderr) = process.communicate()
+
+    # if stderr:
+    #     raise ValueError(stderr)
+
     package = packages_.get_developer_package(path)
 
     build_system_ = build_system.create_build_system(
