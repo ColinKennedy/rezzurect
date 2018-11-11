@@ -281,7 +281,7 @@ class WindowsAdapter(BaseNukeAdapter):
                                ''.format(stderr=stderr))
 
 
-def register(source_path, install_path, system, distribution, architecture):
+def register(source_path, install_path, system, architecture):
     '''Add installation options to all of the Nuke adapter classes.
 
     Each of the installation options take only one arg, which is the adapter
@@ -298,8 +298,6 @@ def register(source_path, install_path, system, distribution, architecture):
             The name of the OS platform. Example: "Linux", "Windows", etc.
         architecture (str):
             The bits of the `system`. Example: "x86_64", "AMD64", etc.
-        distribution (str):
-            The name of the type of OS (Example: "CentOS", "windows", etc.)
 
     '''
     adapters = (
@@ -312,7 +310,7 @@ def register(source_path, install_path, system, distribution, architecture):
 
         add_nuke_from_internet_build = functools.partial(
             base_builder.add_from_internet_build,
-            'nuke', system, distribution, architecture, source_path, install_path)
+            'nuke', system, architecture, source_path, install_path)
         add_nuke_local_filesystem_build = functools.partial(
             base_builder.add_local_filesystem_build, source_path, install_path)
 

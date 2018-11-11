@@ -22,7 +22,6 @@ def main(
         source_path,
         install_path,
         system=platform.system(),
-        distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
 ):
     '''Load all of the user's defined build methods.
@@ -40,9 +39,6 @@ def main(
         system (`str`, optional):
             The name of the OS (example: "Linux", "Windows", etc.)
             If nothing is given, the user's current system is used, instead.
-        distribution (`str`, optional):
-            The name of the type of OS (example: "CentOS", "windows", etc.)
-            If nothing is given, the user's current distribution is used, instead.
         architecture (`str or int`, optional):
             The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
             If nothing is given, the user's current architecture is used, instead.
@@ -61,6 +57,5 @@ def main(
             source_path,
             install_path,
             system,
-            distribution,
             architecture,
         )

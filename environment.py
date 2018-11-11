@@ -28,7 +28,7 @@ def _get_rez_environment_details():
 
     output = {key: value for key, value in request.findall(os.environ.get('REZ_REQUEST', ''))}
     platform_ = output['platform'].capitalize()
-    return (platform_, output['os'], output['arch'])
+    return (platform_, output['arch'])
 
 
 def _resolve_object(path):
@@ -122,7 +122,6 @@ def init(
         source_path,
         install_path,
         system=platform.system(),
-        distribution='-'.join(platform.dist()),
         architecture=common.get_architecture(),
     ):
     '''Load all of the user's defined build methods.
@@ -141,22 +140,16 @@ def init(
         system (`str`, optional):
             The name of the OS (example: "Linux", "Windows", etc.)
             If nothing is given, the user's current system is used, instead.
-        distribution (`str`, optional):
-            The name of the type of OS (example: "CentOS", "windows", etc.)
-            If nothing is given, the user's current distribution is used, instead.
         architecture (`str`, optional):
             The explicit name of the architecture. (Example: "x86_64", "AMD64", etc.)
             If nothing is given, the user's current architecture is used, instead.
 
     '''
-    if not system or not distribution or not architecture:
-        system_, distribution_, architecture_ = _get_rez_environment_details()
+    if not system or not architecture:
+        system_, architecture_ = _get_rez_environment_details()
 
         if not system:
             system = system_
-
-        if not distribution:
-            distribution = distribution_
 
         if not architecture:
             architecture = architecture_
@@ -166,6 +159,5 @@ def init(
             source_path,
             install_path,
             system=system,
-            distribution=distribution,
             architecture=architecture,
         )
