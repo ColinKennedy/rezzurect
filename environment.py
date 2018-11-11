@@ -11,15 +11,10 @@ import os
 import re
 
 # IMPORT LOCAL LIBRARIES
-from .utils import logger as _logger
 from .utils import common
 
 
-# TODO : Consider moving this to `rezzurect.__init__` so that it is automatically
-#        set up when the module is imported
-#
-_logger.init()
-_LOGGER = logging.getLogger('rezzurect.environment')
+LOGGER = logging.getLogger('rezzurect.environment')
 
 
 def _get_rez_environment_details():
@@ -106,7 +101,7 @@ def _get_handlers(objects=None):
         try:
             module = _resolve_object(path)
         except ImportError:
-            _LOGGER.exception('Path "%s" is not a valid Python module import path.', path)
+            LOGGER.exception('Path "%s" is not a valid Python module import path.', path)
             continue
 
         handlers.append(module.main)
