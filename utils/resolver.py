@@ -71,14 +71,27 @@ def get_custom_keys_from_environment():
     return keys
 
 
-def get_settings():
-    '''dict[str, str]: All of the user-defined Respawn environment keys.'''
-    output = dict()
+def get_custom_keys():
+    return get_settings().get('keys', dict())
 
-    output.update(read_configuration_setting_file())
-    output.update(multipurpose_helper.read_settings_from_shotgun_field_safe())
-    output.update(read_user_settings_file())
-    output.update(get_custom_keys_from_environment())
+
+def get_settings():
+    '''dict[str, str]: All of the user-defined Respawn custom keys.'''
+    def update(data, output):
+        for key, value in data.items():
+            if key == 'keys':
+                output[key].update(value)
+            else:
+                output[key] = value
+
+    output = {
+        'keys': dict(),
+    }
+
+    update(read_configuration_setting_file(), output)
+    update(multipurpose_helper.read_settings_from_shotgun_field_safe(), output)
+    update(read_user_settings_file(), output)
+    update(get_custom_keys_from_environment(), output)
 
     return output
 
@@ -122,7 +135,7 @@ def expand(text):
         str: The expanded text result.
 
     '''
-    settings = get_settings()
+    settings = get_custom_keys()
     settings['respawn_root'] = _PIPELINE_CONFIGURATION_ROOT
 
     try:
