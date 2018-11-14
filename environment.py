@@ -12,6 +12,7 @@ import re
 
 # IMPORT LOCAL LIBRARIES
 from .utils import common
+from .utils import logger
 
 
 LOGGER = logging.getLogger('rezzurect.environment')
@@ -140,6 +141,8 @@ def init(
             If nothing is given, the user's current architecture is used, instead.
 
     '''
+    logger.init()
+
     if not system or not architecture:
         system_, architecture_ = _get_rez_environment_details()
 
