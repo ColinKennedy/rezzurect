@@ -11,7 +11,6 @@ from . import config_helper as _config_helper
 
 __SETTINGS = _config_helper.get_settings()
 
-
 AUTO_INSTALLS = __SETTINGS.get('auto_install', True)
 
 CUSTOM_KEYS = __SETTINGS.get('keys', dict())
@@ -44,6 +43,5 @@ def recalculate():
     REZZURECT_LOG_PATH = settings.get('rezzurect_log_path', os.path.join(tempfile.gettempdir(), '.rezzurect'))
 
     REZ_PACKAGE_ROOT = _config_helper.get_root_package_folder()
-
 
     STRATEGY_ORDERS = settings.get('strategy_orders', dict())
