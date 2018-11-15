@@ -95,6 +95,9 @@ def get_environment_variables():
     if 'RESPAWN_REZ_PACKAGE_ROOT' in os.environ:
         output['rez_package_root'] = os.environ['RESPAWN_REZ_PACKAGE_ROOT']
 
+    if 'RESPAWN_AUTO_INSTALLS' in os.environ:
+        output['auto_installs'] = os.environ['RESPAWN_AUTO_INSTALLS'] == '1'
+
     return output
 
 

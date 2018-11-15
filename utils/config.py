@@ -11,7 +11,7 @@ from . import config_helper as _config_helper
 
 __SETTINGS = _config_helper.get_settings()
 
-AUTO_INSTALLS = __SETTINGS.get('auto_install', True)
+AUTO_INSTALLS = __SETTINGS.get('auto_installs', True)
 
 CUSTOM_KEYS = __SETTINGS.get('keys', dict())
 
@@ -34,7 +34,7 @@ def recalculate():
 
     settings = _config_helper.get_settings()
 
-    AUTO_INSTALLS = settings.get('auto_install', True)
+    AUTO_INSTALLS = settings.get('auto_installs', True)
 
     CUSTOM_KEYS = settings.get('keys', dict())
 
