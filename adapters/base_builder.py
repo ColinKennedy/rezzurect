@@ -16,7 +16,7 @@ from ..utils import config
 from ..vendors import six
 
 
-_LOGGER = logging.getLogger('rezzurect.base_builder')
+LOGGER = logging.getLogger('rezzurect.base_builder')
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -78,16 +78,16 @@ class BaseAdapter(object):
         if not destination:
             destination = os.path.dirname(path)
 
-        _LOGGER.debug('Extracting tar file "%s".', path)
+        LOGGER.debug('Extracting tar file "%s".', path)
 
-        with tarfile.open(fileobj=progressbar.TarProgressFile(path, logger=_LOGGER.trace)) as tar:
+        with tarfile.open(fileobj=progressbar.TarProgressFile(path, logger=LOGGER.trace)) as tar:
             try:
                 tar.extractall(path=destination)
             except Exception:
-                _LOGGER.exception('Tar file "%s" failed to extract.', path)
+                LOGGER.exception('Tar file "%s" failed to extract.', path)
                 raise
             else:
-                _LOGGER.debug('Tar extraction finished.')
+                LOGGER.debug('Tar extraction finished.')
 
     @abc.abstractmethod
     def install_from_local(self, source, install):
@@ -151,23 +151,23 @@ class BaseAdapter(object):
 
             return items
 
-        _LOGGER.debug('Finding strategy order for "%s".', cls.__name__)
+        LOGGER.debug('Finding strategy order for "%s".', cls.__name__)
 
         default_order = [name for name, _ in cls.strategies]
 
         package_order = config.STRATEGY_ORDERS.get(cls.name, [])
 
         if package_order:
-            _LOGGER.debug('Package order "%s" was found.', package_order)
+            LOGGER.debug('Package order "%s" was found.', package_order)
             return package_order
 
         global_order = config.STRATEGY_ORDERS.get('*', [])
 
         if global_order:
-            _LOGGER.debug('Global order "%s" was found.', global_order)
+            LOGGER.debug('Global order "%s" was found.', global_order)
             return global_order
 
-        _LOGGER.debug('Default order "%s" will be used.', default_order)
+        LOGGER.debug('Default order "%s" will be used.', default_order)
 
         return default_order
 
@@ -197,9 +197,9 @@ class BaseAdapter(object):
             try:
                 choice(self)
             except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception('Strategy "%s" did not succeed.', name)
+                LOGGER.exception('Strategy "%s" did not succeed.', name)
             else:
-                _LOGGER.info('Strategy "%s" succeeded.', name)
+                LOGGER.info('Strategy "%s" succeeded.', name)
                 return
 
         raise RuntimeError(
@@ -249,7 +249,7 @@ def add_from_internet_build(package, system, architecture, source_path, install_
             'Package/Version "{package}/{adapter.version}" could not be downloaded to path, '
             '"{destination}".'.format(package=package, adapter=adapter, destination=destination))
 
-    _LOGGER.info(
+    LOGGER.info(
         'Downloaded package/version "%s/%s" to path, "%s".',
         package,
         adapter.version,

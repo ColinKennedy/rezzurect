@@ -13,7 +13,7 @@ from ..utils import common
 from ..vendors import six
 
 
-_LOGGER = logging.getLogger('rezzurect.internet')
+LOGGER = logging.getLogger('rezzurect.internet')
 
 
 def _get_url(package, version, system, architecture):
@@ -50,7 +50,7 @@ def _get_url(package, version, system, architecture):
 
     option = (package, version, system, architecture)
 
-    _LOGGER.trace('Checking for URL using "%s".', option)
+    LOGGER.trace('Checking for URL using "%s".', option)
 
     try:
         url = references[option]
@@ -79,7 +79,7 @@ def _install_from_url(url, destination):
         six.moves.urllib.request.urlretrieve(
             url,
             destination,
-            reporthook=progressbar.UrllibProgress(_LOGGER.trace).download_progress_hook,
+            reporthook=progressbar.UrllibProgress(LOGGER.trace).download_progress_hook,
         )
     except six.moves.urllib.ContentTooShortError:
         # Reference: https://docs.python.org/2/library/urllib.html#urllib.ContentTooShortError
