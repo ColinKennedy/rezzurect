@@ -30,6 +30,7 @@ from . import multipurpose_helper
 
 
 _ENVIRONMENT_EXPRESSION = re.compile(r'REZZURECT_CUSTOM_KEY_(?P<key>\w+)')
+_STRATEGY_ORDER_EXPRESSION = re.compile(r'REZZURECT_(?P<key>\w+)_STRATEGY_ORDERS')
 INSTALL_FOLDER_NAME = 'install'
 PIPELINE_CONFIGURATION_ROOT = multipurpose_helper.get_current_pipeline_configuration_root_safe()
 
@@ -89,29 +90,53 @@ def init_custom_pythonpath():
     os.environ['RESPAWN_PYTHONPATH'] = rez_python_package_directory
 
 
-def get_environment_variables():
-    output = dict()
+def _get_variables_from_expression(function):
+    '''Find every environment variable that matches some expression.
 
-    if 'RESPAWN_REZ_PACKAGE_ROOT' in os.environ:
-        output['rez_package_root'] = os.environ['RESPAWN_REZ_PACKAGE_ROOT']
+    Args:
+        function (callable[str] -> `_sre.SRE_Match` or NoneType):
+            A regex function that returns a match, if found.
 
-    if 'RESPAWN_AUTO_INSTALLS' in os.environ:
-        output['auto_installs'] = os.environ['RESPAWN_AUTO_INSTALLS'] == '1'
+    Returns:
+        dict[str, str]: The found variables and their values.
 
-    return output
-
-
-def get_custom_keys_from_environment():
-    '''dict[str, str]: Get every user-defined custom key and its value.'''
+    '''
     keys = dict()
 
     for key, value in six.iteritems(os.environ):
-        match = _ENVIRONMENT_EXPRESSION.match(key)
+        match = function(key)
 
         if match:
             keys[match.group('key')] = value
 
     return keys
+
+
+def get_custom_keys_from_environment():
+    '''dict[str, str]: Get every user-defined custom key and its value.'''
+    return _get_variables_from_expression(_ENVIRONMENT_EXPRESSION.match)
+
+
+def get_environment_variables():
+    '''dict[str, str or bool]: Get every configuration value from the user's envrionment.'''
+    output = dict()
+
+    if 'RESPAWN_AUTO_INSTALLS' in os.environ:
+        output['auto_installs'] = os.environ['RESPAWN_AUTO_INSTALLS'] == '1'
+
+    if 'REZZURECT_STRATEGY_ORDERS' in os.environ:
+        output['strategy_orders'] = {'*': os.environ['REZZURECT_STRATEGY_ORDERS'].split(',')}
+
+    if 'RESPAWN_REZ_PACKAGE_ROOT' in os.environ:
+        output['rez_package_root'] = os.environ['RESPAWN_REZ_PACKAGE_ROOT']
+
+    return output
+
+
+def get_strategy_orders_from_environment():
+    '''dict[str, list[str]]: Each package name and its installation strategies.'''
+    return {key: value.split(',') for key, value in
+            _get_variables_from_expression(_STRATEGY_ORDER_EXPRESSION.match).items()}
 
 
 def get_root_package_folder():
@@ -158,14 +183,20 @@ def get_root_package_folder():
 def get_settings():
     '''dict[str, str]: All of the user-defined Respawn custom keys.'''
     def update(data, output):
+        special_keys = {'keys', 'strategy_orders'}
+
         for key, value in data.items():
-            if key == 'keys':
-                output[key].update(value)
-            else:
+            if key not in special_keys:
                 output[key] = value
+
+        output['keys'].update(data.get('keys', dict()))
+
+        for key, value in data.get('strategy_orders', dict()).items():
+            output['strategy_orders'][key] = value
 
     output = {
         'keys': dict(),
+        'strategy_orders': dict(),
     }
 
     update(read_configuration_setting_file(), output)
@@ -173,6 +204,7 @@ def get_settings():
     update(read_user_settings_file(), output)
     update({'keys': get_custom_keys_from_environment()}, output)
     update(get_environment_variables(), output)
+    update({'strategy_orders': get_strategy_orders_from_environment()}, output)
 
     output['respawn_root'] = PIPELINE_CONFIGURATION_ROOT
 

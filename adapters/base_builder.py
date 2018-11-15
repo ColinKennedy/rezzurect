@@ -12,6 +12,7 @@ import os
 # IMPORT LOCAL LIBRARIES
 from ..strategies import internet
 from ..utils import progressbar
+from ..utils import config
 from ..vendors import six
 
 
@@ -154,18 +155,17 @@ class BaseAdapter(object):
 
         default_order = [name for name, _ in cls.strategies]
 
-        package_order = os.getenv('REZZURECT_{name}_STRATEGY_ORDER'
-                                  ''.format(name=cls.name.upper()), '')
+        package_order = config.STRATEGY_ORDERS.get(cls.name, [])
 
         if package_order:
             _LOGGER.debug('Package order "%s" was found.', package_order)
-            return _split(package_order)
+            return package_order
 
-        global_order = os.getenv('REZZURECT_STRATEGY_ORDER', '')
+        global_order = config.STRATEGY_ORDERS.get('*', [])
 
         if global_order:
             _LOGGER.debug('Global order "%s" was found.', global_order)
-            return _split(global_order)
+            return global_order
 
         _LOGGER.debug('Default order "%s" will be used.', default_order)
 
