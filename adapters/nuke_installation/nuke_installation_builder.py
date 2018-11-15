@@ -97,7 +97,7 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
         )
 
     def install_from_local(self, source, install):
-        '''Search for a locally-installed Nuke file and install it, if it exists.
+        '''Search for an extracted Nuke file and install it, if it exists.
 
         Args:
             source (str):

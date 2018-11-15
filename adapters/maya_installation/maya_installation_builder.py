@@ -21,115 +21,86 @@ _DEFAULT_VALUE = object()
 LOGGER = logging.getLogger('rezzurect.maya_installation_builder')
 
 
-class BaseNukeAdapter(base_builder.BaseAdapter):
+class BaseMayaAdapter(base_builder.BaseAdapter):
 
     '''An base-class which is meant share code across subclasses.
 
     This class is not meant to be used directly.
 
-    Attributes:
-        _install_file_name_template (str):
-            The name of the actual file which can be used to install Nuke.
-            The exact name should be whatever the third-party vendor prefers.
-            Make sure to include any version information in the name, such as
-            "Nuke{major}.{minor}v{patch}-win-x86-release-64.exe" or
-            "Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer".
-
     '''
 
     _install_archive_name_template = ''
-    _install_file_name_template = ''
-
-    @staticmethod
-    def _extract_zip(zip_file_path, destination):
-        '''Extract a ZIP file to some file location.
-
-        Args:
-            zip_file_path (str):
-                The absolute path to some ZIP file.
-            destination (str):
-                An absolute path to a directory where `zip_file_path`
-                will be extracted to.
-
-        '''
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
-            try:
-                zip_file.extractall(destination)
-            except Exception:  # pylint: disable=broad-except
-                LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
-                raise
+    _install_folder_template = ''
 
     @classmethod
     def get_archive_path_from_version(cls, source, version):
         '''str: Get the recommended folder for archive (installer) files to be.'''
         try:
-            major, minor, patch = helper.get_version_parts(version)
+            major = helper.get_version_parts(version)
         except TypeError:
-            major, minor, patch = version
+            major = version
 
-        file_name = cls._install_archive_name_template.format(
-            major=major, minor=minor, patch=patch,
-        )
+        file_name = cls._install_archive_name_template.format(major=major)
 
         return cls.get_archive_path(source, file_name)
 
     @classmethod
-    def get_install_file(cls, root, version):
-        '''Get the absolute path to where the expected Nuke install file is.
+    def get_install_folder(cls, root, version):
+        # '''Get the absolute path to where the expected Nuke install file is.
 
-        Args:
-            root (str):
-                The absolute path to the package folder where the Nuke executable
-                would be found.
-            version (str):
-                The full, unparsed version information to get an executable of.
-                Example: "11.2v3".
+        # Args:
+        #     root (str):
+        #         The absolute path to the package folder where the Nuke executable
+        #         would be found.
+        #     version (str):
+        #         The full, unparsed version information to get an executable of.
+        #         Example: "11.2v3".
 
-        Returns:
-            str: The absolute path to the executable file of the given `version`.
+        # Returns:
+        #     str: The absolute path to the executable file of the given `version`.
 
-        '''
-        major, minor, patch = helper.get_version_parts(version)
+        # '''
+        major = helper.get_version_parts(version)
 
         return cls.get_archive_path(
             root,
-            cls._install_file_name_template.format(major=major, minor=minor, patch=patch),
+            cls._install_folder_template.format(major=major),
         )
 
     def install_from_local(self, source, install):
-        '''Search for a locally-installed Nuke file and install it, if it exists.
+        '''Search for an extracted Maya folder and install it's RPMs, if it exists.
 
         Args:
             source (str):
-                The absolute path to the package folder where the Nuke executable
+                The absolute path to the package folder where the Maya folder
                 would be found.
             install (str):
                 The absolute directory where `source` will be installed into.
 
         Raises:
-            EnvironmentError: If the executable file could not be found.
+            EnvironmentError: If the folder could not be found.
 
         Returns:
-            str: The absolute path to the executable file which is used for installation.
+            str: The absolute path to the folder which is used for installation.
 
         '''
-        executable = self.get_install_file(source, self.version)
+        directory = self.get_install_folder(source, self.version)
 
-        if not os.path.isfile(executable):
+        if not os.path.isfile(directory):
             raise EnvironmentError(
                 'install_file "{executable}" does not exist. '
-                'Check its spelling and try again.'.format(executable=executable))
+                'Check its spelling and try again.'.format(directory=directory))
 
-        return executable
+        return directory
 
 
-class LinuxAdapter(BaseNukeAdapter):
+class LinuxAdapter(BaseMayaAdapter):
 
-    '''An adapter for installing Nuke onto a Linux machine.'''
+    '''An adapter for installing Maya onto a Linux machine.'''
 
-    name = 'nuke'
-    _install_archive_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64.tgz'
-    _install_file_name_template = 'Nuke{major}.{minor}v{patch}-linux-x86-release-64-installer'
+    name = 'maya'
+    _install_archive_name_template = 'Autodesk_Maya_{major}_EN_Linux_64bit'
+    _install_folder_template = 'Autodesk_Maya_{major}_EN_Linux_64bit'
 
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.
@@ -161,26 +132,29 @@ class LinuxAdapter(BaseNukeAdapter):
 
         '''
         try:
-            zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
+            directory = super(LinuxAdapter, self).install_from_local(source, install)
         except EnvironmentError:
             self._extract_tar(source, self.version)
-            zip_file_path = super(LinuxAdapter, self).install_from_local(source, install)
+            directory = super(LinuxAdapter, self).install_from_local(source, install)
 
-        LOGGER.debug('Unzipping "%s".', zip_file_path)
+        raise NotImplementedError('Need to complete')
 
-        self._extract_zip(zip_file_path, install)
+#         LOGGER.debug('Unzipping "%s".', zip_file_path)
 
-        major, minor, _ = helper.get_version_parts(self.version)
-        executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
-        executable = os.path.join(install, executable)
 
-        if not os.path.isfile(executable):
-            raise EnvironmentError('Zip failed to extract to folder "{install}".'
-                                   ''.format(install=install))
+#         self._extract_zip(zip_file_path, install)
 
-        # Reference: https://stackoverflow.com/questions/12791997
-        executable_stats = os.stat(executable)
-        os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
+#         major, minor, _ = helper.get_version_parts(self.version)
+#         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
+#         executable = os.path.join(install, executable)
+
+#         if not os.path.isfile(executable):
+#             raise EnvironmentError('Zip failed to extract to folder "{install}".'
+#                                    ''.format(install=install))
+
+#         # Reference: https://stackoverflow.com/questions/12791997
+#         executable_stats = os.stat(executable)
+#         os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
 
 
 def register(source_path, install_path, system, architecture):
