@@ -86,9 +86,9 @@ class BaseMayaAdapter(base_builder.BaseAdapter):
         '''
         directory = self.get_install_folder(source, self.version)
 
-        if not os.path.isfile(directory):
+        if not os.path.isdir(directory):
             raise EnvironmentError(
-                'install_file "{executable}" does not exist. '
+                'directory "{directory}" does not exist. '
                 'Check its spelling and try again.'.format(directory=directory))
 
         return directory
@@ -99,8 +99,33 @@ class LinuxAdapter(BaseMayaAdapter):
     '''An adapter for installing Maya onto a Linux machine.'''
 
     name = 'maya'
-    _install_archive_name_template = 'Autodesk_Maya_{major}_EN_Linux_64bit'
+    _install_archive_name_template = 'Autodesk_Maya_{major}_EN_Linux_64bit.tgz'
     _install_folder_template = 'Autodesk_Maya_{major}_EN_Linux_64bit'
+
+    @classmethod
+    def _extract_tar(cls, source, version):
+        '''Extract the TAR archive to get Maya's main installation folder.
+
+        Args:
+            source (str): The absolute path to this Rez package's version folder.
+            version (str): The raw version information which is used to "find"
+                           the TAR archive name. Example: "2018".
+
+        Raises:
+            EnvironmentError: If no archive file could be found.
+
+        '''
+        path = cls.get_archive_path_from_version(source, version)
+
+        if not os.path.isfile(path):
+            raise EnvironmentError('Tar file "{path}" does not exist.'
+                                   ''.format(path=path))
+
+        root = os.path.dirname(path)
+        base_name = os.path.splitext(os.path.basename(path))[0]
+        destination = os.path.join(root, base_name)
+
+        cls._extract_tar_file(path, destination)
 
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Nuke files.
@@ -137,12 +162,19 @@ class LinuxAdapter(BaseMayaAdapter):
             self._extract_tar(source, self.version)
             directory = super(LinuxAdapter, self).install_from_local(source, install)
 
-        raise NotImplementedError('Need to complete')
+        major = helper.get_version_parts(self.version)
 
-#         LOGGER.debug('Unzipping "%s".', zip_file_path)
+        main_rpm_file = os.path.join(directory, 'Maya{major}_64-2018.0-5870.x86_64.rpm'.format(major=major))
 
-
-#         self._extract_zip(zip_file_path, install)
+        # TODO : Replace rpm2cpio with a better method, later
+        command = 'cd "{install}" && rpm2cpio "{main_rpm_file}" | cpio -idmv' \
+            ''.format(install=install, main_rpm_file=main_rpm_file)
+        stdout, stderr = subprocess.Popen(
+            [command],
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        ).communicate()
 
 #         major, minor, _ = helper.get_version_parts(self.version)
 #         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
@@ -190,7 +222,8 @@ def register(source_path, install_path, system, architecture):
             base_builder.add_local_filesystem_build, source_path, install_path)
 
         adapter.strategies.append(('local', add_maya_local_filesystem_build))
-        adapter.strategies.append(('internet', add_maya_from_internet_build))
-        adapter.strategies.append(('link', base_builder.add_link_build))
+        # TODO : Add internet strategy again
+        # adapter.strategies.append(('internet', add_maya_from_internet_build))
+        # adapter.strategies.append(('link', base_builder.add_link_build))
 
         chooser.register_build_adapter(adapter, 'maya_installation', system_)

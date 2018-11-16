@@ -70,7 +70,8 @@ def _read_settings_from_shotgun_field():
     try:
         has_respawn_key_field = \
             bool(shotgun_connection.schema_field_read('PipelineConfiguration', 'sg_respawn_keys'))
-    except shotgun.Fault:
+    # except shotgun.Fault:
+    except Exception:
         has_respawn_key_field = False
 
     if not has_respawn_key_field:

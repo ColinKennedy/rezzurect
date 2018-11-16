@@ -10,11 +10,15 @@ import os
 # IMPORT LOCAL LIBRARIES
 from .adapters.houdini_installation import houdini_installation_setting_windows
 from .adapters.houdini_installation import houdini_installation_setting_linux
+from .adapters.maya_installation import maya_installation_setting_windows
 from .adapters.nuke_installation import nuke_installation_setting_windows
+from .adapters.maya_installation import maya_installation_setting_linux
 from .adapters.nuke_installation import nuke_installation_setting_linux
 from .adapters.houdini import houdini_setting_windows
 from .adapters.houdini import houdini_setting_linux
+from .adapters.maya import maya_setting_windows
 from .adapters.nuke import nuke_setting_windows
+from .adapters.maya import maya_setting_linux
 from .adapters.nuke import nuke_setting_linux
 
 
@@ -111,6 +115,14 @@ def get_setting_adapter(package, version, system, env=None, alias=None):
             nuke_installation_setting_linux.LinuxNukeSettingAdapter,
         ('nuke_installation', 'Windows'):
             nuke_installation_setting_windows.WindowsNukeSettingAdapter,
+        ('maya', 'Linux'):
+            maya_setting_linux.LinuxNukeSettingAdapter,
+        ('maya', 'Windows'):
+            maya_setting_windows.WindowsNukeSettingAdapter,
+        ('maya_installation', 'Linux'):
+            maya_installation_setting_linux.LinuxMayaSettingAdapter,
+        ('maya_installation', 'Windows'):
+            maya_installation_setting_windows.WindowsMayaSettingAdapter,
     }
 
     try:

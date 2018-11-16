@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''An adapter (and its functions) for creating and running a Nuke Rez package.'''
+'''An adapter (and its functions) for creating and running a Maya Rez package.'''
 
 # IMPORT LOCAL LIBRARIES
-from ..nuke_installation import helper
+from ..maya_installation import helper
 from .. import common_setting
 
 
-class CommonNukeSettingAdapter(common_setting.BaseAdapter):
+class CommonMayaSettingAdapter(common_setting.BaseAdapter):
 
-    '''An adapter which is used to set up common settings / aliases for Nuke.'''
+    '''An adapter which is used to set up common settings / aliases for Maya.'''
 
-    name = 'nuke'
+    name = 'maya'
 
     def get_executable_command(self):
-        '''The command needed to run Nuke.
+        '''The command needed to run Maya.
 
         Raises:
             EnvironmentError: If the stored version is incorrect.
 
         Returns:
-            str: The found command for Nuke's version.
+            str: The found command for Maya's version.
 
         '''
         match = helper.VERSION_PARSER.match(self.version)
@@ -35,12 +35,11 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
                 )
             )
 
-        # The Nuke command on linux is "Nuke11.2". Non-commercial is "Nuke11.2 -nc"
-        version = '.'.join([match.group('major'), match.group('minor')])
-        return 'Nuke{version} -nc'.format(version=version)
+        version = match.group('major')
+        return 'Maya{version}'.format(version=version)
 
     def execute(self):  # pylint: disable=useless-super-delegation
-        super(CommonNukeSettingAdapter, self).execute()
+        super(CommonMayaSettingAdapter, self).execute()
 
         # Note: Aliases and environment variable settings added here will be
-        #       added to all Nuke versions in all OSes.
+        #       added to all Maya versions in all OSes.

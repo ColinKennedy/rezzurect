@@ -14,6 +14,7 @@ import platform
 
 # IMPORT LOCAL LIBRARIES
 from .adapters.houdini_installation import houdini_installation_builder
+from .adapters.maya_installation import maya_installation_builder
 from .adapters.nuke_installation import nuke_installation_builder
 from .utils import common
 
@@ -46,6 +47,7 @@ def main(
     '''
     known_modules = (
         houdini_installation_builder,
+        maya_installation_builder,
         nuke_installation_builder,
     )
 

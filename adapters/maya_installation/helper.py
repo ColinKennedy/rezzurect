@@ -8,7 +8,7 @@ import os
 import re
 
 
-VERSION_PARSER = re.compile(r'(?P<major>\d+).(?P<minor>\d+)v(?P<patch>\d+)')
+VERSION_PARSER = re.compile(r'(?P<major>\d+)')
 
 
 def get_preinstalled_linux_executables(version):
@@ -27,25 +27,23 @@ def get_preinstalled_linux_executables(version):
         str: The absolute path to a Nuke executable.
 
     '''
-    major, minor, _ = get_version_parts(version)
+    major = get_version_parts(version)
 
     if not major:
         raise RuntimeError(
             'Version "{version}" has no major component. This should not happen.'
             ''.format(version=version))
 
-    if not minor:
-        raise RuntimeError(
-            'Version "{version}" has no minor component. This should not happen.'
-            ''.format(version=version))
+    # TODO : I need to remember where Maya can be installed...
+    return set()
 
-    options = [
-        '/usr/local/Nuke{version}/Nuke{major}.{minor}',
-        os.path.expanduser('~/Nuke{version}/Nuke{major}.{minor}'),
-    ]
+#     options = [
+#         '/usr/local/Nuke{version}/Nuke{major}.{minor}',
+#         os.path.expanduser('~/Nuke{version}/Nuke{major}.{minor}'),
+#     ]
 
-    return set((path.format(version=version, major=major, minor=minor)
-                for path in options))
+#     return set((path.format(version=version, major=major)
+#                 for path in options))
 
 
 def get_preinstalled_windows_executables(version):
@@ -64,25 +62,23 @@ def get_preinstalled_windows_executables(version):
         str: The absolute path to a Nuke executable.
 
     '''
-    major, minor, _ = get_version_parts(version)
+    major = get_version_parts(version)
 
     if not major:
         raise RuntimeError(
             'Version "{version}" has no major component. This should not happen.'
             ''.format(version=version))
 
-    if not minor:
-        raise RuntimeError(
-            'Version "{version}" has no minor component. This should not happen.'
-            ''.format(version=version))
+    # TODO : Find here
+    return set()
 
-    return set([
-        r'C:\Program Files\Nuke{version}\Nuke{major}.{minor}.exe'.format(
-            version=version,
-            major=major,
-            minor=minor,
-        ),
-    ])
+#     return set([
+#         r'C:\Program Files\Nuke{version}\Nuke{major}.{minor}.exe'.format(
+#             version=version,
+#             major=major,
+#             minor=minor,
+#         ),
+#     ])
 
 
 def get_version_parts(text):
@@ -90,6 +86,6 @@ def get_version_parts(text):
     match = VERSION_PARSER.match(text)
 
     if not match:
-        return ('', '', '')
+        return ''
 
-    return (match.group('major'), match.group('minor'), match.group('patch'))
+    return match.group('major')
