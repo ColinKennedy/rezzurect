@@ -44,7 +44,7 @@ class LinuxMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapter
 
         return list(glob.glob(self.env.__PYTHON_SITE_PACKAGES_FOLDER.value()))[0]  # pylint: disable=protected-access
 
-    def execute(self):  # pylint: disable=useless-super-delegation
+    def execute(self):
         '''Add aliases and environment variables to the package on-startup.'''
         super(LinuxMayaSettingAdapter, self).execute()
 
