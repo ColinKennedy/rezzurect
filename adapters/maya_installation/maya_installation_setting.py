@@ -35,7 +35,7 @@ class CommonMayaSettingAdapter(common_setting.BaseAdapter):
                 )
             )
 
-        return 'Maya{version}'.format(version=match.group('major'))
+        return 'maya{version}'.format(version=match.group('major'))
 
     def execute(self):  # pylint: disable=useless-super-delegation
         '''Add aliases and environment variables to the package on-startup.'''

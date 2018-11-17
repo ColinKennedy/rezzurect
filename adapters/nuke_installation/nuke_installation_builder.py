@@ -7,7 +7,6 @@
 import subprocess
 import functools
 import logging
-import zipfile
 import stat
 import os
 
@@ -39,25 +38,6 @@ class BaseNukeAdapter(base_builder.BaseAdapter):
 
     _install_archive_name_template = ''
     _install_file_name_template = ''
-
-    @staticmethod
-    def _extract_zip(zip_file_path, destination):
-        '''Extract a ZIP file to some file location.
-
-        Args:
-            zip_file_path (str):
-                The absolute path to some ZIP file.
-            destination (str):
-                An absolute path to a directory where `zip_file_path`
-                will be extracted to.
-
-        '''
-        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
-            try:
-                zip_file.extractall(destination)
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
-                raise
 
     @classmethod
     def get_archive_path_from_version(cls, source, version):

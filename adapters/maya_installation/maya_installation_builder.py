@@ -8,6 +8,7 @@ import subprocess
 import functools
 import logging
 import zipfile
+import glob
 import stat
 import os
 
@@ -164,17 +165,32 @@ class LinuxAdapter(BaseMayaAdapter):
 
         major = helper.get_version_parts(self.version)
 
-        main_rpm_file = os.path.join(directory, 'Maya{major}_64-2018.0-5870.x86_64.rpm'.format(major=major))
+        rpm_files = [
+            os.path.join(directory, 'Maya*.rpm'),
+            os.path.join(directory, 'adlmapps*.rpm'),
+        ]
 
-        # TODO : Replace rpm2cpio with a better method, later
-        command = 'cd "{install}" && rpm2cpio "{main_rpm_file}" | cpio -idmv' \
-            ''.format(install=install, main_rpm_file=main_rpm_file)
-        stdout, stderr = subprocess.Popen(
-            [command],
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        ).communicate()
+        for template in rpm_files:
+            # TODO : Replace rpm2cpio with a better method, later
+            for rpm_file in glob.glob(template):
+                command = 'cd "{install}" && rpm2cpio "{rpm_file}" | cpio -idmv -W none' \
+                    ''.format(install=install, rpm_file=rpm_file)
+
+                stdout, stderr = subprocess.Popen(
+                    [command],
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                ).communicate()
+
+        mtoa_zip_file = os.path.join(directory, 'package.zip')
+
+        mtoa_destination = os.path.join(install, 'opt', 'solidangle', 'mtoa')
+
+        if not os.path.isdir(mtoa_destination):
+            os.makedirs(mtoa_destination)
+
+        self._extract_zip(mtoa_zip_file, mtoa_destination)
 
 #         major, minor, _ = helper.get_version_parts(self.version)
 #         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)

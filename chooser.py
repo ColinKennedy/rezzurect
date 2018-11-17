@@ -116,9 +116,9 @@ def get_setting_adapter(package, version, system, env=None, alias=None):
         ('nuke_installation', 'Windows'):
             nuke_installation_setting_windows.WindowsNukeSettingAdapter,
         ('maya', 'Linux'):
-            maya_setting_linux.LinuxNukeSettingAdapter,
+            maya_setting_linux.LinuxMayaSettingAdapter,
         ('maya', 'Windows'):
-            maya_setting_windows.WindowsNukeSettingAdapter,
+            maya_setting_windows.WindowsMayaSettingAdapter,
         ('maya_installation', 'Linux'):
             maya_installation_setting_linux.LinuxMayaSettingAdapter,
         ('maya_installation', 'Windows'):

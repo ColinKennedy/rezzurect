@@ -6,6 +6,7 @@
 # IMPORT STANDARD LIBRARIES
 import logging
 import tarfile
+import zipfile
 import abc
 import os
 
@@ -88,6 +89,25 @@ class BaseAdapter(object):
                 raise
             else:
                 LOGGER.debug('Tar extraction finished.')
+
+    @staticmethod
+    def _extract_zip(zip_file_path, destination):
+        '''Extract a ZIP file to some file location.
+
+        Args:
+            zip_file_path (str):
+                The absolute path to some ZIP file.
+            destination (str):
+                An absolute path to a directory where `zip_file_path`
+                will be extracted to.
+
+        '''
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_file:
+            try:
+                zip_file.extractall(destination)
+            except Exception:  # pylint: disable=broad-except
+                LOGGER.exception('Zip file "%s" failed to unzip.', zip_file_path)
+                raise
 
     @abc.abstractmethod
     def install_from_local(self, source, install):

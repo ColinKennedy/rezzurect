@@ -36,7 +36,7 @@ class CommonMayaSettingAdapter(common_setting.BaseAdapter):
             )
 
         version = match.group('major')
-        return 'Maya{version}'.format(version=version)
+        return 'maya{version}'.format(version=version)
 
     def execute(self):  # pylint: disable=useless-super-delegation
         super(CommonMayaSettingAdapter, self).execute()
