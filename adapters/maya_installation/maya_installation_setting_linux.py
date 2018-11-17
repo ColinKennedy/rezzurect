@@ -32,26 +32,46 @@ class LinuxMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapter
         '''
         return helper.get_preinstalled_linux_executables(self.version)
 
-    def _get_python_site_packages_folder(self):
+    def _get_python_site_packages_folder(self, root):
         '''str: Find the absolute path to the Python version that comes with Maya.'''
         # Note: Throw the path into a garbage environment variable so that we
         #       can expand "{root}" to its actual path
         #
-        self.env.__PYTHON_SITE_PACKAGES_FOLDER.set(  # pylint: disable=protected-access
-            '{{root}}/install/usr/autodesk/maya{version}/lib/python*/site-packages'.format(
-            version=self.version,
-        ))
 
-        return list(glob.glob(self.env.__PYTHON_SITE_PACKAGES_FOLDER.value()))[0]  # pylint: disable=protected-access
+        site_packages_folder = '{root}/lib/python*/site-packages'.format(root=root)
+
+        return list(glob.glob(site_packages_folder))[0]
+
+    def _find_first_preinstalled_executable(self):
+        '''str: Find the first Maya executable that can be found on-disk.'''
+        for path in self.get_preinstalled_executables():
+            if os.path.isfile(path):
+                return path
+
+        return ''
 
     def execute(self):
-        '''Add aliases and environment variables to the package on-startup.'''
+        '''Add aliases and environment variables to the package on-startup.
+
+        Raises:
+            EnvironmentError: If the Maya package is not correctly installed
+                              and could not be "discovered" (by linkage).
+
+        '''
         super(LinuxMayaSettingAdapter, self).execute()
 
         major = helper.get_version_parts(self.version)
 
-        root = '{{root}}/{install}/usr/autodesk/maya{major}' \
-            ''.format(install=config_helper.INSTALL_FOLDER_NAME, major=major)
+        base = self.get_install_root()
+
+        if os.path.isdir(base):
+            root = '{base}/{install}/usr/autodesk/maya{major}' \
+                ''.format(base=base, install=config_helper.INSTALL_FOLDER_NAME, major=major)
+        else:
+            root = os.path.dirname(os.path.dirname(self._find_first_preinstalled_executable()))
+
+        if not os.path.isdir(root):
+            raise EnvironmentError('A root Maya installation directory could not be found.')
 
         self.env.PATH.prepend(root + '/bin')
 
@@ -60,7 +80,7 @@ class LinuxMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapter
         self.env.MAYA_LOCATION.set(root)
         self.env.LD_LIBRARY_PATH.append(root + '/lib')
 
-        self.env.PYTHONPATH.append(self._get_python_site_packages_folder())
+        self.env.PYTHONPATH.append(self._get_python_site_packages_folder(root))
 
         # TODO : Finish. Actually, do I actually even need this?
         # self.env.AUTODESK_ADLM_THINCLIENT_ENV.set('{root}/AdlmThinClientCustomEnv.xml')

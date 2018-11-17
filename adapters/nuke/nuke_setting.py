@@ -39,6 +39,10 @@ class CommonNukeSettingAdapter(common_setting.BaseAdapter):
         version = '.'.join([match.group('major'), match.group('minor')])
         return 'Nuke{version} -nc'.format(version=version)
 
+    def get_install_root(self):
+        '''str: The absolute path to Nuke's Rez package installation directory.'''
+        return self.env.NUKE_INSTALL_ROOT.get()
+
     def execute(self):  # pylint: disable=useless-super-delegation
         super(CommonNukeSettingAdapter, self).execute()
 

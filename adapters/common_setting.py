@@ -46,6 +46,12 @@ class AbstractBaseAdapter(object):
         '''str: The command needed to run the program.'''
         return ''
 
+    @staticmethod
+    @abc.abstractmethod
+    def get_install_root():
+        '''str: Find the absolute directory to the package's main install folder.'''
+        return ''
+
     def execute(self):
         '''Add aliases and anything else that all packages should include.'''
         command = self.get_executable_command()

@@ -152,7 +152,7 @@ def add_common_commands(package, version, env, alias):
     adapter = get_setting_adapter(package, version, platform.system(), env, alias)
     adapter.execute()
 
-    install_root = env.INSTALL_ROOT.get()
+    install_root = adapter.get_install_root()
 
     if not os.path.isdir(install_root) or not os.listdir(install_root):
         for executable in adapter.get_preinstalled_executables():

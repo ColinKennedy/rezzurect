@@ -23,6 +23,10 @@ class CommonHoudiniSettingAdapter(common_setting.BaseAdapter):
         '''
         return 'houdini-bin'
 
+    def get_install_root(self):
+        '''str: The absolute path to Houdini's Rez package installation directory.'''
+        return self.env.HOUDINI_INSTALL_ROOT.get()
+
     def execute(self):  # pylint: disable=useless-super-delegation
         '''Add aliases and environment variables to the package on-startup.'''
         super(CommonHoudiniSettingAdapter, self).execute()

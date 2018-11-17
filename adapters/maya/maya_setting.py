@@ -38,6 +38,10 @@ class CommonMayaSettingAdapter(common_setting.BaseAdapter):
         version = match.group('major')
         return 'maya{version}'.format(version=version)
 
+    def get_install_root(self):
+        '''str: The absolute path to Maya's Rez package installation directory.'''
+        return self.env.MAYA_INSTALL_ROOT.get()
+
     def execute(self):  # pylint: disable=useless-super-delegation
         super(CommonMayaSettingAdapter, self).execute()
 

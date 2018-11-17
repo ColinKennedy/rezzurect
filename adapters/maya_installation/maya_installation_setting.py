@@ -37,6 +37,10 @@ class CommonMayaSettingAdapter(common_setting.BaseAdapter):
 
         return 'maya{version}'.format(version=match.group('major'))
 
+    def get_install_root(self):
+        '''str: The absolute path to Maya's Rez package installation directory.'''
+        return self.env.MAYA_INSTALL_ROOT.get()
+
     def execute(self):  # pylint: disable=useless-super-delegation
         '''Add aliases and environment variables to the package on-startup.'''
         super(CommonMayaSettingAdapter, self).execute()

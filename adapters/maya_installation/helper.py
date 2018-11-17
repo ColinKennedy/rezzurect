@@ -34,16 +34,10 @@ def get_preinstalled_linux_executables(version):
             'Version "{version}" has no major component. This should not happen.'
             ''.format(version=version))
 
-    # TODO : I need to remember where Maya can be installed...
-    return set()
-
-#     options = [
-#         '/usr/local/Nuke{version}/Nuke{major}.{minor}',
-#         os.path.expanduser('~/Nuke{version}/Nuke{major}.{minor}'),
-#     ]
-
-#     return set((path.format(version=version, major=major)
-#                 for path in options))
+    return {
+        '/usr/autodesk/maya{major}/bin/maya'.format(major=major),
+        '/usr/autodesk/maya/bin/maya',
+    }
 
 
 def get_preinstalled_windows_executables(version):

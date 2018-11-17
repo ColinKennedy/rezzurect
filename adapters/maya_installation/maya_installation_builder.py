@@ -192,18 +192,6 @@ class LinuxAdapter(BaseMayaAdapter):
 
         self._extract_zip(mtoa_zip_file, mtoa_destination)
 
-#         major, minor, _ = helper.get_version_parts(self.version)
-#         executable = 'Nuke{major}.{minor}'.format(major=major, minor=minor)
-#         executable = os.path.join(install, executable)
-
-#         if not os.path.isfile(executable):
-#             raise EnvironmentError('Zip failed to extract to folder "{install}".'
-#                                    ''.format(install=install))
-
-#         # Reference: https://stackoverflow.com/questions/12791997
-#         executable_stats = os.stat(executable)
-#         os.chmod(executable, executable_stats.st_mode | stat.S_IEXEC)
-
 
 def register(source_path, install_path, system, architecture):
     '''Add installation options to all of the Maya adapter classes.
