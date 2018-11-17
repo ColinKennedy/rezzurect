@@ -61,25 +61,21 @@ class LinuxMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapter
         super(LinuxMayaSettingAdapter, self).execute()
 
         major = helper.get_version_parts(self.version)
-
         base = self.get_install_root()
 
         if os.path.isdir(base):
-            root = '{base}/{install}/usr/autodesk/maya{major}' \
-                ''.format(base=base, install=config_helper.INSTALL_FOLDER_NAME, major=major)
+            root = os.path.join(base, 'usr', 'autodesk', 'maya{major}'.format(major=major))
         else:
             root = os.path.dirname(os.path.dirname(self._find_first_preinstalled_executable()))
 
         if not os.path.isdir(root):
-            raise EnvironmentError('A root Maya installation directory could not be found.')
+            raise EnvironmentError('Directory: "{root}" could not be found.'.format(root=root))
 
-        self.env.PATH.prepend(root + '/bin')
-
+        self.env.PATH.prepend(os.path.join(root, 'bin'))
         self.env.MAYA_VERSION.set(self.version)
         self.env.MAYA_MAJOR_VERSION.set(major)
         self.env.MAYA_LOCATION.set(root)
-        self.env.LD_LIBRARY_PATH.append(root + '/lib')
-
+        self.env.LD_LIBRARY_PATH.append(os.path.join(root, 'lib'))
         self.env.PYTHONPATH.append(self._get_python_site_packages_folder(root))
 
         # TODO : Finish. Actually, do I actually even need this?

@@ -226,8 +226,7 @@ def register(source_path, install_path, system, architecture):
             base_builder.add_local_filesystem_build, source_path, install_path)
 
         adapter.strategies.append(('local', add_maya_local_filesystem_build))
-        # TODO : Add internet strategy again
-        # adapter.strategies.append(('internet', add_maya_from_internet_build))
-        # adapter.strategies.append(('link', base_builder.add_link_build))
+        adapter.strategies.append(('internet', add_maya_from_internet_build))
+        adapter.strategies.append(('link', base_builder.add_link_build))
 
         chooser.register_build_adapter(adapter, 'maya_installation', system_)
