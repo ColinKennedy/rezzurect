@@ -75,7 +75,14 @@ class LinuxMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapter
         self.env.MAYA_VERSION.set(self.version)
         self.env.MAYA_MAJOR_VERSION.set(major)
         self.env.MAYA_LOCATION.set(root)
-        self.env.LD_LIBRARY_PATH.append(os.path.join(root, 'lib'))
+
+        # TODO : I need this path but it causes the install to fail.
+        #        Fix/uncomment later!
+        #
+        # self.env.LD_LIBRARY_PATH.append(os.path.join(root, 'lib'))
+        self.env.LD_LIBRARY_PATH.append(os.path.join(root, 'plug-ins', 'xgen', 'lib'))
+        self.env.LD_LIBRARY_PATH.append(os.path.join(root, 'plug-ins', 'substance', 'lib'))
+
         self.env.PYTHONPATH.append(self._get_python_site_packages_folder(root))
 
         # TODO : Finish. Actually, do I actually even need this?
