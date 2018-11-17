@@ -47,20 +47,20 @@ class BaseMayaAdapter(base_builder.BaseAdapter):
 
     @classmethod
     def get_install_folder(cls, root, version):
-        # '''Get the absolute path to where the expected Nuke install file is.
+        '''Get the absolute path to where the expected Maya main install folder is.
 
-        # Args:
-        #     root (str):
-        #         The absolute path to the package folder where the Nuke executable
-        #         would be found.
-        #     version (str):
-        #         The full, unparsed version information to get an executable of.
-        #         Example: "11.2v3".
+        Args:
+            root (str):
+                The absolute path to the package folder for the Maya executable
+                would be found.
+            version (str):
+                The full, unparsed version information to get an executable of.
+                Example: "2018".
 
-        # Returns:
-        #     str: The absolute path to the executable file of the given `version`.
+        Returns:
+            str: The absolute path to the main install folder for `version`.
 
-        # '''
+        '''
         major = helper.get_version_parts(version)
 
         return cls.get_archive_path(
@@ -129,7 +129,7 @@ class LinuxAdapter(BaseMayaAdapter):
         cls._extract_tar_file(path, destination)
 
     def get_preinstalled_executables(self):
-        '''Get a list of possible pre-installed executable Nuke files.
+        '''Get a list of possible pre-installed executable Maya files.
 
         Raises:
             RuntimeError:
@@ -138,23 +138,23 @@ class LinuxAdapter(BaseMayaAdapter):
                 was built correctly, this shouldn't occur.
 
         Returns:
-            str: The absolute path to a Nuke executable.
+            str: The absolute path to a Maya executable.
 
         '''
         return helper.get_preinstalled_linux_executables(self.version)
 
     def install_from_local(self, source, install):
-        '''Unzip the Nuke file to the given install folder.
+        '''Unzip the Maya installation folder's contents to the `install` folder.
 
         Args:
             source (str):
-                The absolute path to the package folder where the Nuke executable
-                would be found.
+                The absolute path to the package folder where the Maya's
+                installation folder would be found.
             install (str):
                 The absolute directory where `source` will be installed into.
 
         Raises:
-            EnvironmentError: If the Zip file failed to extract Nuke into `install`.
+            EnvironmentError: If the Zip file failed to extract Maya into `install`.
 
         '''
         try:
