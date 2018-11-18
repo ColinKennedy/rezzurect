@@ -139,7 +139,7 @@ def build(path, install_path=''):
     #     command += ' --prefix {install_path}'.format(install_path=install_path)
 
     # process = subprocess.Popen(
-    #     [command],
+    #     command,
     #     stdout=subprocess.PIPE,
     #     stderr=subprocess.PIPE,
     #     shell=True
