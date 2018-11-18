@@ -196,7 +196,7 @@ def get_settings():
     }
 
     update(read_configuration_setting_file(), output)
-    update(multipurpose_helper.read_settings_from_shotgun_field_safe(), output)
+    update({'keys': multipurpose_helper.read_settings_from_shotgun_field_safe()}, output)
     update(read_user_settings_file(), output)
     update({'keys': get_custom_keys_from_environment()}, output)
     update(get_environment_variables(), output)
