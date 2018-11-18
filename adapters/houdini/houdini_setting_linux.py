@@ -4,8 +4,8 @@
 '''An adapter for running a Houdini Rez package in Linux.'''
 
 # IMPORT LOCAL LIBRARIES
+from ..houdini_installation import helper
 from . import houdini_setting
-from . import helper
 
 
 class LinuxHoudiniSettingAdapter(houdini_setting.CommonHoudiniSettingAdapter):
