@@ -161,10 +161,6 @@ def get_root_package_folder():
         str: The absolute path to a folder where Rez packages can be found.
 
     '''
-    rez_package_folder = os.getenv('RESPAWN_REZ_PACKAGE_ROOT', '')
-    if rez_package_folder:
-        return rez_package_folder
-
     rez_package_folder = get_settings().get('rez_package_root', '')
     if rez_package_folder:
         return rez_package_folder
