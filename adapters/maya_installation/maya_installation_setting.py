@@ -24,18 +24,7 @@ class CommonMayaSettingAdapter(common_setting.BaseAdapter):
             str: The found command for Maya's version.
 
         '''
-        match = helper.VERSION_PARSER.match(self.version)
-
-        if not match:
-            raise EnvironmentError(
-                'version "{obj.version}" did not match expected pattern, '
-                '"{parser.pattern}"'.format(
-                    obj=self.version,
-                    parser=helper.VERSION_PARSER,
-                )
-            )
-
-        return 'maya{version}'.format(version=match.group('major'))
+        return 'maya.exe'
 
     def get_install_root(self):
         '''str: The absolute path to Maya's Rez package installation directory.'''

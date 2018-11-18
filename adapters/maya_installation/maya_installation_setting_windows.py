@@ -12,6 +12,10 @@ class WindowsMayaSettingAdapter(maya_installation_setting.CommonMayaSettingAdapt
 
     '''An adapter which is used to set up common settings / aliases for Maya.'''
 
+    def get_executable_command(self):
+        '''str: The command needed to run Maya.'''
+        return 'maya.exe'
+
     def get_preinstalled_executables(self):
         '''Get a list of possible pre-installed executable Maya files.
 

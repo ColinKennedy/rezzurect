@@ -214,6 +214,7 @@ def register(source_path, install_path, system, architecture):
     '''
     adapters = (
         ('Linux', LinuxAdapter),
+        ('Windows', WindowsAdapter),
     )
 
     for system_, adapter in adapters:

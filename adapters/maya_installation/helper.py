@@ -63,16 +63,7 @@ def get_preinstalled_windows_executables(version):
             'Version "{version}" has no major component. This should not happen.'
             ''.format(version=version))
 
-    # TODO : Find here
-    return set()
-
-#     return set([
-#         r'C:\Program Files\Nuke{version}\Nuke{major}.{minor}.exe'.format(
-#             version=version,
-#             major=major,
-#             minor=minor,
-#         ),
-#     ])
+    return {r'C:\Program Files\Autodesk\Maya{major}\bin\maya.exe'.format(major=major), }
 
 
 def get_version_parts(text):
