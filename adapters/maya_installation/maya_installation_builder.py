@@ -193,6 +193,33 @@ class LinuxAdapter(BaseMayaAdapter):
         self._extract_zip(mtoa_zip_file, mtoa_destination)
 
 
+class WindowsAdapter(BaseMayaAdapter):
+
+    '''An adapter for installing Maya onto a Windows machine.'''
+
+    name = 'maya'
+
+    def get_preinstalled_executables(self):
+        '''Get a list of possible pre-installed executable Maya files.
+
+        Raises:
+            RuntimeError:
+                If we can't get version information from the stored version then
+                this function will fail. Normally though, assuming this adapter
+                was built correctly, this shouldn't occur.
+
+        Returns:
+            str: The absolute path to a Maya executable.
+
+        '''
+        return helper.get_preinstalled_windows_executables(self.version)
+
+    def install_from_local(self, source, install):
+        '''Do nothing Maya-Windows local installation is not supported.'''
+        raise NotImplementedError('Not supported')
+
+
+
 def register(source_path, install_path, system, architecture):
     '''Add installation options to all of the Maya adapter classes.
 
