@@ -4,6 +4,7 @@
 '''A module for rez-specific build instructions and sourcing external files.'''
 
 # IMPORT STANDARD LIBRARIES
+import platform
 import logging
 import glob
 import json
@@ -20,9 +21,16 @@ from rez import packages_
 
 # TODO : Ask Shotgun Support for a better way to find this path
 # TODO : Find a way to not have to include this sys.path.append
+if platform.system() == 'Windows':
+    _ROOT = os.path.join(os.path.expanduser('~'), 'AppData', 'Roaming', 'Shotgun')
+elif platform.system() == 'Linux':
+    _ROOT = os.path.join(os.path.expanduser('~'), '.shotgun')
+else:
+    raise NotImplementedError('Need the mac root folder, here')
+
 sys.path.append(
-    sorted(glob.glob(os.path.join(os.path.expanduser('~'),
-     '.shotgun',
+    sorted(glob.glob(os.path.join(
+     _ROOT,
      'bundle_cache',
      'app_store',
      'tk-core',
