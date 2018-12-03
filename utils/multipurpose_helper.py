@@ -5,7 +5,9 @@
 
 # IMPORT STANDARD LIBRARIES
 import logging
+import glob
 import json
+import sys
 import os
 
 # IMPORT THIRD-PARTY LIBRARIES
@@ -15,6 +17,18 @@ from rez import build_system
 from rez import exceptions
 from rez import packages_
 
+
+# TODO : Ask Shotgun Support for a better way to find this path
+# TODO : Find a way to not have to include this sys.path.append
+sys.path.append(
+    sorted(glob.glob(os.path.join(os.path.expanduser('~'),
+     '.shotgun',
+     'bundle_cache',
+     'app_store',
+     'tk-core',
+     'v*',
+     'python')))[-1]
+)
 
 LOGGER = logging.getLogger('rezzurect.multipurpose_helper')
 
