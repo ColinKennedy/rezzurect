@@ -161,10 +161,6 @@ def get_root_package_folder():
         str: The absolute path to a folder where Rez packages can be found.
 
     '''
-    rez_package_folder = os.getenv('RESPAWN_REZ_PACKAGE_ROOT', '')
-    if rez_package_folder:
-        return rez_package_folder
-
     rez_package_folder = get_settings().get('rez_package_root', '')
     if rez_package_folder:
         return rez_package_folder
@@ -200,7 +196,7 @@ def get_settings():
     }
 
     update(read_configuration_setting_file(), output)
-    update(multipurpose_helper.read_settings_from_shotgun_field_safe(), output)
+    update({'keys': multipurpose_helper.read_settings_from_shotgun_field_safe()}, output)
     update(read_user_settings_file(), output)
     update({'keys': get_custom_keys_from_environment()}, output)
     update(get_environment_variables(), output)
